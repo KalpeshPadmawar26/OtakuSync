@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genre | OtakuSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
+            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
+            <div class="floating-menu" id="floatingMenu">
+                <a href="index.html#trending-section">Top Anime</a>
+                <a href="index.html#airing-section">Airing Anime</a>
+                <a href="index.html#upcoming-section">Upcoming Anime</a>
+            </div>
+            <div class="logo"><a href="index.html">OtakuSync</a></div>
+        </div>
+        <ul class="nav-links desktop-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="start.html">Start Anime</a></li>
+            <li><a href="chat.html">Community</a></li>
+        </ul>
+        <div id="userMenu" class="hidden">
+            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
+            <button class="logout-btn" onclick="app.logout()">Logout</button>
+        </div>
+    </nav>
+
+    <main style="padding-top: 100px; padding-bottom: 50px;">
+        <div style="text-align:center; padding: 20px;">
+            <h1 style="font-size: 3rem; color: var(--primary-color);" id="genreTitle">Loading Genre...</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Explore the best anime from this category.</p>
+        </div>
+        
+        <section class="section" id="top-picks-section">
+            <h2 class="section-title">🏆 Top Picks</h2>
+            <div class="horizontal-scroll" id="genreTopList">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+
+        <section class="section" id="airing-now-section">
+            <h2 class="section-title">⭐ Airing Now</h2>
+            <div class="horizontal-scroll" id="genreAiringList">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+
+        <section class="section" id="recommended-section">
+            <h2 class="section-title">💡 Recommended</h2>
+            <div class="horizontal-scroll" id="genreRecommendedList">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="notificationArea"></div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="js/genres.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            app.initGenreDetails();
+        });
+    </script>
+</body>
+</html>

@@ -41,7 +41,13 @@ async function generateRecommendations(userId) {
         const watchlist = watchlistRaw.map(r => r.anime_data);
         const watched = watchedRaw.map(r => r.anime_data);
 
-        if(watchlist.length === 0 && watched.length === 0) {
+        const [users] = await db.query('SELECT preferences FROM users WHERE id = ?', [userId]);
+        let preferences = [];
+        if(users[0] && users[0].preferences) {
+            try { preferences = typeof users[0].preferences === 'string' ? JSON.parse(users[0].preferences).genres : users[0].preferences.genres; } catch(e){}
+        }
+
+        if(watchlist.length === 0 && watched.length === 0 && (!preferences || preferences.length === 0)) {
             return []; // Cannot recommend
         }
 
@@ -99,10 +105,19 @@ async function generateRecommendations(userId) {
 
             const popularityBoost = anime.score || 0; // Jikan score
 
+            let prefMatch = 0;
+            if(preferences && preferences.length > 0 && anime.genres) {
+                anime.genres.forEach(g => {
+                    if(preferences.includes(g)) prefMatch += 1;
+                });
+            }
+
             const finalScore =
                 (0.7 * watchedScore) +
                 (0.3 * watchlistScore) +
-                (0.1 * popularityBoost);
+                (2.0 * prefMatch) +
+                (0.1 * popularityBoost) +
+                (Math.random() * 0.3);
             
             // Add slight randomness to avoid repetitive arrays for identical profiles
             const randomFactor = 1 + (Math.random() * 0.1); 

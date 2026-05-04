@@ -9,47 +9,55 @@
 </head>
 <body>
     <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
+        <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+            <button class="mobile-nav-toggle" id="mobileToggle" onclick="toggleMobileNav()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
             <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
             <div class="floating-menu" id="floatingMenu">
-                <a href="index.html#trending">Top Anime</a>
-                <a href="index.html#airing">Airing Anime</a>
-                <a href="index.html#upcoming">Upcoming Anime</a>
+                <a href="index.html#trending-section">🔥 Top Anime</a>
+                <a href="index.html#airing-section">⭐ Airing Now</a>
+                <a href="index.html#upcoming-section">🆕 Upcoming</a>
             </div>
             <div class="logo"><a href="index.html">OtakuSync</a></div>
         </div>
         <ul class="nav-links desktop-links">
             <li><a href="index.html">Home</a></li>
-            <li><a href="dashboard.html">Dashboard</a></li>
+            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="start.html">Start Anime</a></li>
             <li class="active"><a href="chat.html">Community</a></li>
         </ul>
-        <div id="userMenu">
-            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
+        <div id="userMenu" class="hidden">
+            <span id="welcomeText" style="margin-right: 12px; font-weight: bold; font-size: 0.9rem;"></span>
             <button class="logout-btn" onclick="app.logout()">Logout</button>
         </div>
     </nav>
 
-    <main class="chat-main" style="padding-top: 100px;">
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
+    <div class="mobile-nav-drawer" id="mobileDrawer">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" id="mobileNavDashboard">Dashboard</a>
+        <a href="start.html">Start Anime</a>
+        <a href="chat.html" class="active">Community</a>
+    </div>
+
+    <main class="chat-main" style="padding-top: calc(var(--navbar-height) + 20px);">
         <div class="chat-container">
             <div class="chat-sidebar">
-                <h3>Genres</h3>
+                <h3>Genre Rooms</h3>
                 <ul id="genreList">
-                    <li onclick="app.joinChatRoom('Action', this)" class="active">🔥 Action</li>
-                    <li onclick="app.joinChatRoom('Romance', this)">💖 Romance</li>
-                    <li onclick="app.joinChatRoom('Comedy', this)">😂 Comedy</li>
-                    <li onclick="app.joinChatRoom('Slice of Life', this)">🌟 Slice of Life</li>
-                    <li onclick="app.joinChatRoom('Fantasy', this)">🧙 Fantasy</li>
-                    <li onclick="app.joinChatRoom('Sci-Fi', this)">🚀 Sci-Fi</li>
-                    <li onclick="app.joinChatRoom('Horror', this)">💀 Horror</li>
+                    <!-- Populated dynamically from MASTER_GENRES -->
+                    <li class="loading" style="font-size:0.8rem; padding: 10px 20px;">Loading...</li>
                 </ul>
             </div>
             <div class="chat-window">
                 <div class="chat-header">
                     <h3 id="currentRoomName">🔥 Action Room</h3>
-                    <span style="font-size: 0.8rem; color:#aaa;">24 Hour Auto-Delete</span>
+                    <span style="font-size: 0.78rem; color:#666;">24h auto-delete</span>
                 </div>
                 <div class="chat-messages" id="chatMessages">
-                    <div style="text-align:center;color:#666;padding:20px;">Connecting to chat...</div>
+                    <div style="text-align:center;color:#555;padding:30px;">Connecting to chat...</div>
                 </div>
                 <form class="chat-input-area" onsubmit="event.preventDefault(); app.sendChatMessage();">
                     <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required>
@@ -61,13 +69,47 @@
 
     <div id="notificationArea"></div>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="js/genres.js"></script>
     <script src="js/app.js"></script>
     <script>
+        function toggleMobileNav() {
+            document.getElementById('mobileToggle').classList.toggle('open');
+            document.getElementById('mobileDrawer').classList.toggle('open');
+            document.getElementById('mobileOverlay').classList.toggle('show');
+        }
+        function closeMobileNav() {
+            document.getElementById('mobileToggle').classList.remove('open');
+            document.getElementById('mobileDrawer').classList.remove('open');
+            document.getElementById('mobileOverlay').classList.remove('show');
+        }
+
+        // Genre emoji map
+        const GENRE_EMOJI = {
+            Action:'⚡', Adventure:'🗺️', Comedy:'😂', Romance:'❤️', Fantasy:'🔮',
+            Horror:'💀', Mystery:'🕵️', Drama:'🎭', 'Slice of Life':'🌟', 'Sci-Fi':'🚀',
+            Thriller:'🔪', Psychological:'🧠', Supernatural:'👻', Mecha:'🤖',
+            Sports:'⚽', Music:'🎵', Historical:'⚔️', Isekai:'🌀', Samurai:'🗡️',
+            Military:'🪖', Magic:'✨', School:'📚', Parody:'🎭', Space:'🌌',
+            Vampire:'🧛', Shounen:'💪', Shoujo:'🌸', Seinen:'📖', Josei:'💐',
+            'Martial Arts':'🥋', 'Super Power':'💥', Police:'🚔', Game:'🎮',
+            Kids:'🧸', Demons:'😈', Harem:'🌸', 'Time Travel':'⏰',
+            'Psychological Thriller':'🌀', Dementia:'🌀', Cars:'🏎️'
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             if (!localStorage.getItem('token')) {
                 window.location.href = 'index.html';
                 return;
             }
+
+            // Populate genre sidebar from MASTER_GENRES
+            const list = document.getElementById('genreList');
+            list.innerHTML = MASTER_GENRES.map((g, i) => `
+                <li onclick="app.joinChatRoom('${g}', this)" ${i===0 ? 'class="active"' : ''}>
+                    ${GENRE_EMOJI[g] || '💬'} ${g}
+                </li>
+            `).join('');
+
             app.initChat();
         });
     </script>
