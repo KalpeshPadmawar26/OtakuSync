@@ -18,6 +18,15 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Root Route & Health Check
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        message: "OtakuSync API is running!", 
+        status: "healthy",
+        endpoints: ["/api/auth", "/api/user", "/api/anime", "/api/recommendations"]
+    });
+});
+
 // Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
