@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtakuSync | Anime Recommendations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navbar (Top Fixed) -->
+    <nav class="navbar">
+        <div class="logo" id="navLogo">OtakuSync</div>
+        <ul class="nav-links">
+            <li id="navHome" class="active">Home</li>
+            <li id="navDashboard" class="hidden">Dashboard</li>
+        </ul>
+        <input type="text" class="search-bar" placeholder="Search anime..." />
+        <button class="login-btn" id="loginBtn">Login</button>
+        <button class="logout-btn hidden" id="logoutBtn">Logout</button>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <!-- Hero Section -->
+        <header class="hero">
+            <h1>Attack on Titan</h1>
+            <p>Centuries ago, mankind was slaughtered to near extinction by monstrous humanoid creatures called titans, forcing humans to hide in fear behind enormous concentric walls.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary">Watch Now</button>
+                <button class="btn btn-secondary" onclick="app.toggleWatchlist(1)">Add to Watchlist</button>
+            </div>
+        </header>
+
+        <!-- Main Content Sections -->
+        <main>
+            <section class="section">
+                <h2 class="section-title">🔥 Trending</h2>
+                <div class="horizontal-scroll" id="trendingList">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">⭐ Top Airing</h2>
+                <div class="horizontal-scroll" id="topAiringList">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">🆕 Upcoming</h2>
+                <div class="anime-grid" id="upcomingList">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="hidden">
+        <main style="padding-top: 80px;">
+            <section class="section">
+                <h2 class="section-title">✅ Watched List</h2>
+                <div id="watchedEmpty" class="empty-state">You haven't marked any anime as watched yet.</div>
+                <div class="anime-grid" id="dashboardWatchedList">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">📌 Watchlist</h2>
+                <div id="watchlistEmpty" class="empty-state">Your watchlist is empty.</div>
+                <div class="anime-grid" id="dashboardWatchlist">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">📈 Genre Insights</h2>
+                <div class="chart-container" id="genreInsightsChart">
+                    <!-- Populated by JS -->
+                    <div class="empty-state">Add anime to your lists to see insights.</div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">🤖 Your Recommendations</h2>
+                <div class="anime-grid" id="recommendationsList">
+                    <div class="empty-state">Add anime to your watched/watchlist to get recommendations!</div>
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Area -->
+    <div id="notificationArea"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | OtakuSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
+            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
+            <div class="floating-menu" id="floatingMenu">
+                <a href="index.html#trending">Top Anime</a>
+                <a href="index.html#airing">Airing Anime</a>
+                <a href="index.html#upcoming">Upcoming Anime</a>
+            </div>
+            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">OtakuSync</a></div>
+        </div>
+        <ul class="nav-links desktop-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="active"><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="chat.html">Community</a></li>
+        </ul>
+        <div id="userMenu">
+            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
+            <button class="logout-btn" onclick="app.logout()">Logout</button>
+        </div>
+    </nav>
+
+    <main style="padding-top: 80px;">
+        <section class="section">
+            <h2 class="section-title">🤖 For You (Recommendations)</h2>
+            <div class="anime-grid" id="recommendationsList">
+                <div class="loading">Generating personalized recommendations...</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">📈 Your Genre Profile</h2>
+            <div class="chart-container" id="genreInsightsChart">
+                <div class="loading">Analyzing your watched list...</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">✅ Watched List</h2>
+            <div class="anime-grid" id="dashboardWatchedList">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">📌 Watchlist</h2>
+            <div class="anime-grid" id="dashboardWatchlist">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="notificationArea"></div>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'index.html';
+                return;
+            }
+            app.initDashboard();
+        });
+    </script>
+</body>
+</html>

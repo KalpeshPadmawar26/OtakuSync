@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Details | OtakuSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
+            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
+            <div class="floating-menu" id="floatingMenu">
+                <a href="index.html#trending">Top Anime</a>
+                <a href="index.html#airing">Airing Anime</a>
+                <a href="index.html#upcoming">Upcoming Anime</a>
+            </div>
+            <div class="logo"><a href="index.html">OtakuSync</a></div>
+        </div>
+        <ul class="nav-links desktop-links">
+            <li><a href="index.html">Home</a></li>
+            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="chat.html">Community</a></li>
+        </ul>
+        <form class="search-container" onsubmit="event.preventDefault(); app.handleFormSearch();">
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off"/>
+            <button type="submit" class="hidden"></button>
+            <div id="searchResults" class="search-results hidden"></div>
+        </form>
+        <div id="authButtons">
+            <button class="btn-secondary" onclick="app.showAuthModal('register')">Register</button>
+            <button class="login-btn" onclick="app.showAuthModal('login')">Login</button>
+        </div>
+        <div id="userMenu" class="hidden">
+            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
+            <button class="logout-btn" onclick="app.logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text"></div>
+        </div>
+    </div>
+
+    <!-- Anime Detail Section -->
+    <div id="animeDetailView">
+        <div class="loading" style="padding-top: 150px; text-align: center;">Loading Anime Details...</div>
+    </div>
+
+    <!-- Related Anime -->
+    <main style="padding-top: 20px;">
+        <section class="section">
+            <h2 class="section-title">🔥 You Might Also Like</h2>
+            <div class="horizontal-scroll" id="relatedAnimeList">
+                <div class="loading">Loading...</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="notificationArea"></div>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            app.initAnimeDetails();
+        });
+    </script>
+</body>
+</html>

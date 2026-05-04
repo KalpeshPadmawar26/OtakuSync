@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtakuSync | Anime Recommendations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
+            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
+            <div class="floating-menu" id="floatingMenu">
+                <a href="index.html#trending">Top Anime</a>
+                <a href="index.html#airing">Airing Anime</a>
+                <a href="index.html#upcoming">Upcoming Anime</a>
+            </div>
+            <div class="logo"><a href="index.html">OtakuSync</a></div>
+        </div>
+        <ul class="nav-links desktop-links">
+            <li class="active"><a href="index.html">Home</a></li>
+            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="chat.html">Community</a></li>
+        </ul>
+        <form class="search-container" onsubmit="event.preventDefault(); app.handleFormSearch();">
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off"/>
+            <button type="submit" class="hidden"></button>
+            <div id="searchResults" class="search-results hidden"></div>
+        </form>
+        <div id="authButtons">
+            <button class="btn-secondary" onclick="app.showAuthModal('register')">Register</button>
+            <button class="login-btn" onclick="app.showAuthModal('login')">Login</button>
+        </div>
+        <div id="userMenu" class="hidden">
+            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
+            <button class="logout-btn" onclick="app.logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text"></div>
+        </div>
+    </div>
+
+    <!-- Home Page Content -->
+    <header class="hero">
+        <h1>Discover Your Next Obsession</h1>
+        <p>Sync your anime tastes and get algorithmic recommendations powered by your watchlist.</p>
+        <div class="hero-actions">
+            <button class="btn-primary" onclick="document.getElementById('trending').scrollIntoView({behavior: 'smooth'})">Browse Top Anime</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="section" id="trending">
+            <h2 class="section-title">🔥 Top Anime</h2>
+            <div class="anime-grid" id="trendingList">
+                <div class="loading">Loading...</div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-primary load-more" onclick="app.loadMore('top')">Load More</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">⭐ Airing Now</h2>
+            <div class="anime-grid" id="airingList">
+                <div class="loading">Loading...</div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-primary load-more" onclick="app.loadMore('airing')">Load More</button>
+            </div>
+        </section>
+
+        <section class="section" id="upcoming">
+            <h2 class="section-title">🆕 Upcoming Anime</h2>
+            <div class="horizontal-scroll" id="upcomingList">
+                <div class="loading">Loading...</div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-primary load-more" onclick="app.loadMore('upcoming')">Load More</button>
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section class="section">
+            <div class="feedback-section">
+                <h2>Give Feedback</h2>
+                <form onsubmit="event.preventDefault(); app.submitFeedback();">
+                    <textarea id="feedbackMsg" placeholder="Tell us what you think..." required></textarea>
+                    <button type="submit" class="btn-primary">Submit Feedback</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <div id="notificationArea"></div>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            app.initHome();
+        });
+    </script>
+</body>
+</html>
