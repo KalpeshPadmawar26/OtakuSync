@@ -1,4 +1,6 @@
-const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://otakusync.onrender.com';
+const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.')) 
+    ? `${window.location.protocol}//${window.location.hostname}:5000` 
+    : 'https://otakusync.onrender.com';
 const API_URL = `${BACKEND_URL}/api`;
 
 class App {
@@ -493,15 +495,16 @@ class App {
             console.log("Fetching upcoming anime...");
             this.fetchWithCache('/anime/upcoming?page=1', 'upcomingAnime_1')
                 .then(res => {
-                    if (res.data && res.data.length > 0) {
+                    if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
                         upcomingList.innerHTML = res.data.map(a => this.createAnimeCard(a, "", true)).join('');
                     } else {
-                        upcomingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
+                        console.warn("Upcoming Anime empty or missing data:", res);
+                        upcomingList.innerHTML = '<div class="error-text">No upcoming anime found at the moment.</div>';
                     }
                 })
                 .catch(e => {
                     console.error("Upcoming Anime Error:", e);
-                    upcomingList.innerHTML = '<div class="error-text">Network Error. Check console.</div>';
+                    upcomingList.innerHTML = '<div class="error-text">Network Error. Check console if the issue persists on mobile.</div>';
                 });
         }
 
@@ -518,8 +521,15 @@ class App {
                 if(yourGenresTitle) yourGenresTitle.innerText = `🎯 Because You Like ${topTwo.join(' & ')}`;
                 try {
                     const res = await this.fetchAPI(`/anime/search?q=${encodeURIComponent(topTwo[0])}`);
-                    yourGenresList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
-                } catch(e) { yourGenresList.innerHTML = ''; }
+                    if(res && res.data && res.data.length > 0) {
+                        yourGenresList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                    } else {
+                        yourGenresList.innerHTML = '<div class="loading">Generating picks...</div>';
+                    }
+                } catch(e) { 
+                    console.error("Genres fetch error:", e);
+                    yourGenresList.innerHTML = ''; 
+                }
             }
         }
     }
@@ -718,7 +728,7 @@ class App {
                     ${isWatchlisted ? '- Watchlist' : '+ Watchlist'}
                 </button>
             `;
-            reason = `Releases on: ${anime.aired ? anime.aired.split('to')[0] : 'TBA'}`;
+            reason = `Releases: ${ (anime.aired && typeof anime.aired === 'string') ? anime.aired.split('to')[0].trim() : 'TBA'}`;
         } else {
             actionsHtml = `
                 <button class="${isWatchlisted ? 'active' : ''}" style="color:${isWatchlisted ? '#ff7a00' : 'white'}" onclick='app.handleToggle("watchlist", ${safeAnime}, ${isWatchlisted}, event)'>
