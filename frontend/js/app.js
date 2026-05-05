@@ -56,14 +56,29 @@ class App {
     }
 
     showBrowserNotification(title, message) {
+        console.log("Attempting browser notification. Permission:", Notification.permission);
         const notifyEnabled = JSON.parse(localStorage.getItem('notifyMentions')) ?? true;
-        if (!notifyEnabled) return;
+        if (!notifyEnabled) {
+            console.log("Notifications disabled via app settings.");
+            return;
+        }
 
         if (Notification.permission === "granted") {
-            new Notification(title, {
-                body: message,
-                icon: "/logo.png"
-            });
+            try {
+                const n = new Notification(title, {
+                    body: message,
+                    tag: 'otakusync-mention', // Prevents flooding
+                    renotify: true
+                });
+                n.onclick = () => {
+                    window.focus();
+                    n.close();
+                };
+            } catch (e) {
+                console.error("Notification constructor failed:", e);
+            }
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission();
         }
     }
 
@@ -880,17 +895,21 @@ class App {
     }
 
     createMessageUI(m) {
+        const isMe = m.user === this.username;
         const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         // Highlight Mentions
         let msgHtml = m.message.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
 
         return `
-            <div class="chat-msg">
-                <span class="msg-u">${m.user}</span>
-                <span class="msg-t">${time}</span>
-                <br>
-                <div class="msg-c">${msgHtml}</div>
+            <div class="chat-msg ${isMe ? 'msg-sent' : 'msg-received'}">
+                <div class="msg-bubble">
+                    ${!isMe ? `<span class="msg-u">${m.user}</span>` : ''}
+                    <div class="msg-c">
+                        ${msgHtml}
+                        <span class="msg-t">${time}</span>
+                    </div>
+                </div>
             </div>
         `;
     }
