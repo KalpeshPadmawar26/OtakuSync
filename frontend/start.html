@@ -9,39 +9,39 @@
 </head>
 <body>
     <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 12px; position: relative;">
-            <button class="mobile-nav-toggle" id="mobileToggle" onclick="toggleMobileNav()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
-            <div class="floating-menu" id="floatingMenu">
-                <a href="#action-section" onclick="app.scrollToId('action-section', event)">💥 Action</a>
-                <a href="#romance-section" onclick="app.scrollToId('romance-section', event)">❤️ Romance</a>
-                <a href="#dark-section" onclick="app.scrollToId('dark-section', event)">🔪 Dark</a>
-                <a href="#scifi-section" onclick="app.scrollToId('scifi-section', event)">🚀 Sci-Fi</a>
-            </div>
-            <div class="logo"><a href="index.html">OtakuSync</a></div>
+        <div class="navbar-left">
+            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks">
+                <li class="active"><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
+                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            </ul>
         </div>
-        <ul class="nav-links desktop-links">
-            <li><a href="index.html">Home</a></li>
-            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
-            <li class="active"><a href="start.html">Start Anime</a></li>
-            <li><a href="chat.html">Community</a></li>
-        </ul>
-        <div id="userMenu" class="hidden">
-            <span id="welcomeText" style="margin-right: 12px; font-weight: bold; font-size: 0.9rem;"></span>
-            <button class="logout-btn" onclick="app.logout()">Logout</button>
+
+        <div class="navbar-right">
+            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
+                <div id="searchResults" class="search-results hidden"></div>
+            </form>
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
+                    <i>👤</i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div id="authButtons">
+                        <a onclick="app.showAuthModal('login')">Login</a>
+                        <a onclick="app.showAuthModal('register')">Register</a>
+                    </div>
+                    <div id="userMenu" class="hidden">
+                        <div id="dropdownUser" class="dropdown-header"></div>
+                        <a href="dashboard.html">My Dashboard</a>
+                        <a onclick="app.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <!-- Mobile Nav Drawer -->
-    <div class="mobile-nav-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
-    <div class="mobile-nav-drawer" id="mobileDrawer">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html" id="mobileNavDashboard">Dashboard</a>
-        <a href="start.html" class="active">Start Anime</a>
-        <a href="chat.html">Community</a>
-    </div>
+    <div class="bottom-nav" id="bottomNav"></div>
 
     <main style="padding-top: calc(var(--navbar-height) + 20px); padding-bottom: 60px;">
         <div style="text-align:center; padding: 30px 20px 10px;">
@@ -56,21 +56,23 @@
     </main>
 
     <div id="notificationArea"></div>
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="js/genres.js"></script>
     <script src="js/app.js"></script>
     <script>
-        function toggleMobileNav() {
-            document.getElementById('mobileToggle').classList.toggle('open');
-            document.getElementById('mobileDrawer').classList.toggle('open');
-            document.getElementById('mobileOverlay').classList.toggle('show');
-        }
-        function closeMobileNav() {
-            document.getElementById('mobileToggle').classList.remove('open');
-            document.getElementById('mobileDrawer').classList.remove('open');
-            document.getElementById('mobileOverlay').classList.remove('show');
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             app.initStarters();
         });

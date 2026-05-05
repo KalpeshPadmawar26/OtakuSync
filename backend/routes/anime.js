@@ -4,15 +4,29 @@ const axios = require('axios');
 
 const JIKAN_API = 'https://api.jikan.moe/v4';
 
-// 1-minute API Cache
+// 5-minute API Cache with error logging
 const apiCache = new Map();
 const fetchWithCache = async (url) => {
-    if(apiCache.has(url)) {
-        if(Date.now() - apiCache.get(url).time < 60000) return apiCache.get(url).data;
+    try {
+        if(apiCache.has(url)) {
+            const cached = apiCache.get(url);
+            if(Date.now() - cached.time < 300000) return cached.data; // 5 mins
+        }
+        
+        console.log(`[Jikan] Fetching: ${url}`);
+        const res = await axios.get(url);
+        
+        apiCache.set(url, { time: Date.now(), data: res });
+        return res;
+    } catch (error) {
+        console.error(`[Jikan Error] URL: ${url} | Status: ${error.response?.status} | Msg: ${error.message}`);
+        // If we have any cached data at all, return it even if expired rather than failing
+        if(apiCache.has(url)) {
+            console.log(`[Jikan] Returning expired cache due to upstream error for: ${url}`);
+            return apiCache.get(url).data;
+        }
+        throw error;
     }
-    const res = await axios.get(url);
-    apiCache.set(url, { time: Date.now(), data: res });
-    return res;
 };
 
 const normalizeAnime = (item) => {

@@ -5,6 +5,7 @@ const API_URL = `${BACKEND_URL}/api`;
 
 class App {
     constructor() {
+        window.app = this;
         this.token = localStorage.getItem('token') || null;
         this.username = localStorage.getItem('username') || null;
         this.watched = [];
@@ -18,6 +19,9 @@ class App {
             airing: 1,
             upcoming: 1
         };
+
+        this.currentCategory = null;
+        this.categoryPage = 1;
 
         // Chat
         this.socket = null;
@@ -153,40 +157,120 @@ class App {
     updateAuthUI() {
         const authButtons = document.getElementById('authButtons');
         const userMenu = document.getElementById('userMenu');
-        const welcomeText = document.getElementById('welcomeText');
-        const navDashboard = document.getElementById('navDashboard');
+        const dropdownUser = document.getElementById('dropdownUser');
+        const body = document.body;
 
         if (this.token) {
             if (authButtons) authButtons.classList.add('hidden');
             if (userMenu) userMenu.classList.remove('hidden');
-            if (welcomeText) welcomeText.innerText = `Hi, ${this.username}`;
-            if (navDashboard) navDashboard.classList.remove('hidden');
+            if (dropdownUser) dropdownUser.innerText = `${this.username}`;
+            if (body) {
+                body.classList.remove('auth-logged-out');
+                body.classList.add('auth-logged-in');
+            }
         } else {
-            // Keep links hidden and show auth
             if (authButtons) authButtons.classList.remove('hidden');
             if (userMenu) userMenu.classList.add('hidden');
-            if (navDashboard) navDashboard.classList.add('hidden');
+            if (body) {
+                body.classList.remove('auth-logged-in');
+                body.classList.add('auth-logged-out');
+            }
         }
+
+        this.renderBottomNav();
+    }
+
+    renderBottomNav() {
+        const bottomNav = document.getElementById('bottomNav');
+        if (!bottomNav) return;
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const icons = {
+            home: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-5.25v-6h-4.5v6H4.5A1.5 1.5 0 0 1 3 19.5v-9Z"/></svg>`,
+            community: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11a3 3 0 1 0-2.999-3A3 3 0 0 0 16 11Zm-8 0a3 3 0 1 0-3-3A3 3 0 0 0 8 11Zm0 2c-2.67 0-8 1.34-8 4v2h10v-2c0-1.08.42-2.03 1.1-2.85C10.06 13.43 8.66 13 8 13Zm8 0c-.29 0-.62.02-.97.05A4.97 4.97 0 0 1 18 17v2h6v-2c0-2.66-5.33-4-8-4Z"/></svg>`,
+            start: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.8 5.67L21 8.6l-4.5 4.38 1.06 6.2L12 16.2l-5.56 2.98 1.06-6.2L3 8.6l6.2-.93L12 2Z"/></svg>`,
+            profile: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.01-8 4.5V21h16v-2.5C20 16.01 16.42 14 12 14Z"/></svg>`
+        };
+
+        const items = this.token 
+            ? [
+                { label: 'Home', icon: icons.home, action: 'app.goHome(event)', page: 'index.html' },
+                { label: 'Community', icon: icons.community, action: 'app.goCommunity(event)', page: 'chat.html' },
+                { label: 'Start Anime', icon: icons.start, action: 'app.goStart(event)', page: 'start.html' },
+                { label: 'Profile', icon: icons.profile, action: 'app.showMobileProfileMenu(event)', page: null }
+            ]
+            : [
+                { label: 'Home', icon: icons.home, action: 'app.goHome(event)', page: 'index.html' },
+                { label: 'Start Anime', icon: icons.start, action: 'app.goStart(event)', page: 'start.html' },
+                { label: 'Profile', icon: icons.profile, action: 'app.showMobileProfileMenu(event)', page: null }
+            ];
+
+        bottomNav.innerHTML = items.map(item => `
+            <button class="bottom-nav-item ${item.page === currentPage ? 'active' : ''}" onclick="${item.action}">
+                <span class="bottom-nav-icon">${item.icon}</span>
+                <span>${item.label}</span>
+            </button>
+        `).join('');
+    }
+
+    goHome(e) {
+        if(e) e.preventDefault();
+        window.location.href = 'index.html';
+    }
+
+    goCommunity(e) {
+        if(e) e.preventDefault();
+        window.location.href = 'chat.html';
+    }
+
+    goStart(e) {
+        if(e) e.preventDefault();
+        window.location.href = 'start.html';
+    }
+
+    toggleProfileMenu(e) {
+        if(e) e.stopPropagation();
+        const menu = document.getElementById('profileDropdown');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    showMobileProfileMenu(e) {
+        if (e) e.stopPropagation();
+        const existing = document.getElementById('mobileProfileMenu');
+        if (existing) {
+            existing.remove();
+            return;
+        }
+
+        const menu = document.createElement('div');
+        menu.id = 'mobileProfileMenu';
+        menu.className = 'mobile-profile-menu';
+
+        if (this.token) {
+            menu.innerHTML = `
+                <div class="mobile-profile-title">${this.username || 'User'}</div>
+                <button onclick="window.location.href='dashboard.html'; app.hideMobileProfileMenu();">My Dashboard</button>
+                <button onclick="app.logout()">Logout</button>
+            `;
+        } else {
+            menu.innerHTML = `
+                <button onclick="app.showAuthModal('login'); app.hideMobileProfileMenu();">Login</button>
+                <button onclick="app.showAuthModal('register'); app.hideMobileProfileMenu();">Register</button>
+            `;
+        }
+
+        document.body.appendChild(menu);
+    }
+
+    hideMobileProfileMenu() {
+        const menu = document.getElementById('mobileProfileMenu');
+        if (menu) menu.remove();
     }
 
     toggleFloatingMenu() {
         const menu = document.getElementById('floatingMenu');
         if (menu) menu.classList.toggle('show');
-    }
-
-    scrollToId(id, event) {
-        if(event) event.preventDefault();
-        const el = document.getElementById(id);
-        if(el) {
-            const offset = 80;
-            const elementPosition = el.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - offset;
-            
-            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-            this.toggleFloatingMenu();
-        } else {
-            window.location.href = `index.html#${id}`;
-        }
     }
 
     scrollToId(id, event) {
@@ -255,8 +339,6 @@ class App {
                 const eMail = document.getElementById('authEmail').value;
                 const cp = document.getElementById('authConfirmPassword').value;
 
-                if (!u || !p) return;
-
                 if (this.authMode === 'register') {
                     if (!eMail) return document.getElementById('authError').innerText = "Email is required";
                     if (p !== cp) return document.getElementById('authError').innerText = "Passwords do not match";
@@ -302,31 +384,43 @@ class App {
             });
         }
 
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.querySelector('.search-bar');
         if (searchInput) {
             let debounce;
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(debounce);
                 debounce = setTimeout(() => this.handleSearch(e.target.value), 500);
             });
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container')) {
-                    const res = document.getElementById('searchResults');
-                    if (res) res.classList.add('hidden');
-                }
-            });
         }
+        
+        document.addEventListener('click', (e) => {
+            const res = document.getElementById('searchResults');
+            if (res && !e.target.closest('.search-container')) {
+                res.classList.add('hidden');
+            }
+            
+            // Profile Dropdown close
+            const dropdown = document.getElementById('profileDropdown');
+            const profileContainer = document.getElementById('profileContainer');
+            if (dropdown && dropdown.classList.contains('show') && profileContainer && !profileContainer.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+
+            if (!e.target.closest('#mobileProfileMenu') && !e.target.closest('.bottom-nav-item')) {
+                this.hideMobileProfileMenu();
+            }
+        });
     }
 
     handleFormSearch() {
-        const query = document.getElementById('searchInput').value;
+        const query = document.querySelector('.search-bar').value;
         if (query.trim()) {
             this.handleSearch(query);
-            // Optionally redirect to search page, but user requested fetch-based dynamic grid
         }
     }
 
     async logout() {
+        this.hideMobileProfileMenu();
         this.token = null;
         this.username = null;
         localStorage.removeItem('token');
@@ -742,7 +836,8 @@ class App {
 
         const reasonHtml = reason ? `<span class="reason-text">${reason}</span>` : '';
         const topBadge = anime.score ? `<div class="card-rating-badge">⭐ ${Number(anime.score).toFixed(1)}</div>` : '';
-        const genreHtml = anime.genres.slice(0, 2).map(g =>
+        const genres = Array.isArray(anime.genres) ? anime.genres : [];
+        const genreHtml = genres.slice(0, 2).map(g =>
             `<span class="genre-tag" onclick="event.stopPropagation(); window.location.href='genre.html?name=${encodeURIComponent(g)}'">${g}</span>`
         ).join('');
 
@@ -863,6 +958,28 @@ class App {
         }
 
         this.setupMentionAutocomplete();
+        this.bindChatMobileControls();
+    }
+
+    bindChatMobileControls() {
+        const openBtn = document.getElementById('roomPickerBtn');
+        const closeBtn = document.getElementById('closeRoomsBtn');
+        const sidebar = document.getElementById('chatSidebar');
+        const overlay = document.getElementById('chatOverlay');
+        if (!openBtn || !sidebar || !overlay) return;
+
+        openBtn.onclick = () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+        };
+
+        const closeRooms = () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        };
+
+        if (closeBtn) closeBtn.onclick = closeRooms;
+        overlay.onclick = closeRooms;
     }
 
     joinChatRoom(genre, el = null) {
@@ -876,6 +993,12 @@ class App {
         if (msgs) msgs.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">Fetching history...</div>';
         if (this.socket) {
             this.socket.emit('joinRoom', genre);
+        }
+        const sidebar = document.getElementById('chatSidebar');
+        const overlay = document.getElementById('chatOverlay');
+        if (window.innerWidth <= 768 && sidebar && overlay) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
         }
     }
 
@@ -943,16 +1066,22 @@ class App {
     }
 
     createMessageUI(m) {
-        const isMe = m.user === this.username;
-        const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const author = m.user || m.username || 'User';
+        const isMe = author === this.username;
+        const time = new Date(m.time || Date.now()).toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Asia/Kolkata'
+        });
         
         // Highlight Mentions
-        let msgHtml = m.message.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+        let msgHtml = (m.message || '').replace(/@(\w+)/g, '<span class="mention">@$1</span>');
 
         return `
             <div class="chat-msg ${isMe ? 'msg-sent' : 'msg-received'}">
                 <div class="msg-bubble">
-                    ${!isMe ? `<span class="msg-u">${m.user}</span>` : ''}
+                    ${!isMe ? `<span class="msg-u">${author}</span>` : ''}
                     <div class="msg-c">
                         ${msgHtml}
                         <span class="msg-t">${time}</span>
@@ -1010,6 +1139,53 @@ class App {
             }
         }
     }
+    async initCategoryPage() {
+        const params = new URLSearchParams(window.location.search);
+        const type = params.get('type') || 'trending';
+        this.currentCategory = type;
+        this.categoryPage = 1;
+
+        const titles = {
+            trending: '🔥 Trending Now',
+            airing: '⭐ Seasonal Hits',
+            upcoming: '🆕 Highly Anticipated'
+        };
+
+        const titleEl = document.getElementById('categoryTitle');
+        if (titleEl) titleEl.innerText = titles[type] || 'Explore';
+        document.title = `${titles[type] || 'Explore'} | OtakuSync`;
+
+        await this.loadCategoryData();
+    }
+
+    async loadCategoryData() {
+        const grid = document.getElementById('categoryGrid');
+        const btn = document.getElementById('loadMoreBtn');
+        if (!grid) return;
+
+        const endpoint = this.currentCategory === 'trending' ? '/anime/top' : 
+                         this.currentCategory === 'airing' ? '/anime/airing' : '/anime/upcoming';
+
+        try {
+            const res = await this.fetchAPI(`${endpoint}?page=${this.categoryPage}`);
+            if (this.categoryPage === 1) grid.innerHTML = '';
+
+            if (res.data && res.data.length > 0) {
+                grid.innerHTML += res.data.map(a => this.createAnimeCard(a)).join('');
+                if (btn) btn.style.display = 'block';
+            } else {
+                if (btn) btn.style.display = 'none';
+            }
+        } catch (e) {
+            console.error("Category Load Error:", e);
+        }
+    }
+
+    async loadMoreCategory() {
+        this.categoryPage++;
+        await this.loadCategoryData();
+    }
+
     async initGenreDetails() {
         const urlParams = new URLSearchParams(window.location.search);
         const genreName = urlParams.get('name') || '';
@@ -1043,3 +1219,4 @@ class App {
 }
 
 const app = new App();
+window.app = app;

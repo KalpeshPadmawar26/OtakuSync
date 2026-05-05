@@ -9,47 +9,45 @@
 </head>
 <body>
     <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 12px; position: relative;">
-            <button class="mobile-nav-toggle" id="mobileToggle" onclick="toggleMobileNav()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
-            <div class="floating-menu" id="floatingMenu">
-                <a href="#trending-section" onclick="app.scrollToId('trending-section', event)">🔥 Top Anime</a>
-                <a href="#airing-section" id="airingLink" onclick="app.scrollToId('airing-section', event)">⭐ Airing Now</a>
-                <a href="#upcoming-section" onclick="app.scrollToId('upcoming-section', event)">🆕 Upcoming</a>
+        <div class="navbar-left">
+            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks">
+                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
+                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            </ul>
+        </div>
+
+        <div class="navbar-right">
+            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
+                <div id="searchResults" class="search-results hidden"></div>
+            </form>
+
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
+                    <i>👤</i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div id="authButtons">
+                        <a onclick="app.showAuthModal('login')">Login</a>
+                        <a onclick="app.showAuthModal('register')">Register</a>
+                    </div>
+                    <div id="userMenu" class="hidden">
+                        <div id="dropdownUser" class="dropdown-header"></div>
+                        <a href="dashboard.html">My Dashboard</a>
+                        <a onclick="app.logout()">Logout</a>
+                    </div>
+                </div>
             </div>
-            <div class="logo"><a href="index.html">OtakuSync</a></div>
-        </div>
-        <ul class="nav-links desktop-links">
-            <li class="active"><a href="index.html">Home</a></li>
-            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="start.html">Start Anime</a></li>
-            <li><a href="chat.html">Community</a></li>
-        </ul>
-        <form class="search-container" onsubmit="event.preventDefault(); app.handleFormSearch();">
-            <input type="text" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off"/>
-            <button type="submit" class="hidden"></button>
-            <div id="searchResults" class="search-results hidden"></div>
-        </form>
-        <div id="authButtons">
-            <button class="btn-secondary" onclick="app.showAuthModal('register')">Register</button>
-            <button class="login-btn" onclick="app.showAuthModal('login')">Login</button>
-        </div>
-        <div id="userMenu" class="hidden">
-            <span id="welcomeText" style="margin-right: 12px; font-weight: bold; font-size:0.9rem;"></span>
-            <button class="logout-btn" onclick="app.logout()">Logout</button>
         </div>
     </nav>
 
-    <!-- Mobile Nav Drawer -->
-    <div class="mobile-nav-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
-    <div class="mobile-nav-drawer" id="mobileDrawer">
-        <a href="index.html" class="active">Home</a>
-        <a href="dashboard.html" id="mobileNavDashboard">Dashboard</a>
-        <a href="start.html">Start Anime</a>
-        <a href="chat.html">Community</a>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav" id="bottomNav">
+        <!-- Will be populated by app.js based on auth state -->
     </div>
+
+
 
     <!-- Auth Modal -->
     <div id="authModal" class="modal hidden">
@@ -76,32 +74,32 @@
 
     <main>
         <section class="section" id="trending-section">
-            <h2 class="section-title">🔥 Top Anime</h2>
-            <div class="anime-grid" id="trendingList">
-                <div class="loading">Loading...</div>
+            <div class="section-header">
+                <h2 class="section-title">🔥 New Release</h2>
+                <a href="category.html?type=trending" class="see-all-btn">See All</a>
             </div>
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="btn-primary load-more" onclick="app.loadMore('top')">Load More</button>
+            <div class="horizontal-scroll" id="trendingList">
+                <div class="loading">Loading...</div>
             </div>
         </section>
 
         <section class="section" id="airing-section">
-            <h2 class="section-title">⭐ Airing Now</h2>
-            <div class="anime-grid" id="airingList">
-                <div class="loading">Loading...</div>
+            <div class="section-header">
+                <h2 class="section-title">⭐ Top Airing</h2>
+                <a href="category.html?type=airing" class="see-all-btn">See All</a>
             </div>
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="btn-primary load-more" onclick="app.loadMore('airing')">Load More</button>
+            <div class="horizontal-scroll" id="airingList">
+                <div class="loading">Loading...</div>
             </div>
         </section>
 
         <section class="section" id="upcoming-section">
-            <h2 class="section-title">🆕 Upcoming Anime</h2>
+            <div class="section-header">
+                <h2 class="section-title">🆕 Upcoming</h2>
+                <a href="category.html?type=upcoming" class="see-all-btn">See All</a>
+            </div>
             <div class="horizontal-scroll" id="upcomingList">
                 <div class="loading">Loading...</div>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-primary load-more" onclick="app.loadMore('upcoming')">Load More</button>
             </div>
         </section>
 
@@ -151,18 +149,8 @@
     <div id="notificationArea"></div>
     <script src="js/genres.js"></script>
     <script src="js/app.js"></script>
-    <script>
-        function toggleMobileNav() {
-            document.getElementById('mobileToggle').classList.toggle('open');
-            document.getElementById('mobileDrawer').classList.toggle('open');
-            document.getElementById('mobileOverlay').classList.toggle('show');
-        }
-        function closeMobileNav() {
-            document.getElementById('mobileToggle').classList.remove('open');
-            document.getElementById('mobileDrawer').classList.remove('open');
-            document.getElementById('mobileOverlay').classList.remove('show');
-        }
 
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             app.initHome();
         });

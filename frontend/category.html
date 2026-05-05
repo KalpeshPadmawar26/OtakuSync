@@ -3,9 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Details | OtakuSync</title>
+    <title>Explore Categories | OtakuSync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .category-page-header {
+            padding: 40px 24px 20px;
+            max-width: 1300px;
+            margin: 80px auto 0;
+        }
+        .category-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .category-meta {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        .load-more-container {
+            display: flex;
+            justify-content: center;
+            margin: 50px 0;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -16,7 +37,6 @@
                 <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
             </ul>
         </div>
-
         <div class="navbar-right">
             <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
                 <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
@@ -41,8 +61,23 @@
         </div>
     </nav>
 
+    <div class="category-page-header">
+        <h1 id="categoryTitle" class="category-title">Explore</h1>
+        <p id="categoryCount" class="category-meta">Discover the best anime in this category.</p>
+        
+        <div class="anime-grid" id="categoryGrid">
+            <!-- Data populated by app.js -->
+        </div>
+
+        <div class="load-more-container">
+            <button id="loadMoreBtn" class="btn-primary" onclick="app.loadMoreCategory()">Load More</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
     <div class="bottom-nav" id="bottomNav"></div>
 
+    <!-- Auth Modal -->
     <div id="authModal" class="modal hidden">
         <div class="modal-content">
             <span class="close" onclick="app.hideAuthModal()">&times;</span>
@@ -56,26 +91,13 @@
         </div>
     </div>
 
-    <!-- Anime Detail Section -->
-    <div id="animeDetailView">
-        <div class="loading" style="padding-top: 150px; text-align: center;">Loading Anime Details...</div>
-    </div>
-
-    <!-- Related Anime -->
-    <main style="padding-top: 20px;">
-        <section class="section">
-            <h2 class="section-title">🔥 You Might Also Like</h2>
-            <div class="horizontal-scroll" id="relatedAnimeList">
-                <div class="loading">Loading...</div>
-            </div>
-        </section>
-    </main>
-
     <div id="notificationArea"></div>
+
+    <script src="js/genres.js"></script>
     <script src="js/app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            app.initAnimeDetails();
+            app.initCategoryPage();
         });
     </script>
 </body>

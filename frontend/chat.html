@@ -9,43 +9,48 @@
 </head>
 <body>
     <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 12px; position: relative;">
-            <button class="mobile-nav-toggle" id="mobileToggle" onclick="toggleMobileNav()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
-            <div class="floating-menu" id="floatingMenu">
-                <a href="index.html#trending-section">🔥 Top Anime</a>
-                <a href="index.html#airing-section">⭐ Airing Now</a>
-                <a href="index.html#upcoming-section">🆕 Upcoming</a>
-            </div>
-            <div class="logo"><a href="index.html">OtakuSync</a></div>
+        <div class="navbar-left">
+            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks">
+                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
+                <li class="active"><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            </ul>
         </div>
-        <ul class="nav-links desktop-links">
-            <li><a href="index.html">Home</a></li>
-            <li id="navDashboard" class="hidden"><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="start.html">Start Anime</a></li>
-            <li class="active"><a href="chat.html">Community</a></li>
-        </ul>
-        <div id="userMenu" class="hidden">
-            <span id="welcomeText" style="margin-right: 12px; font-weight: bold; font-size: 0.9rem;"></span>
-            <button class="logout-btn" onclick="app.logout()">Logout</button>
+
+        <div class="navbar-right">
+            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
+                <div id="searchResults" class="search-results hidden"></div>
+            </form>
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
+                    <i>👤</i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div id="authButtons">
+                        <a onclick="app.showAuthModal('login')">Login</a>
+                        <a onclick="app.showAuthModal('register')">Register</a>
+                    </div>
+                    <div id="userMenu" class="hidden">
+                        <div id="dropdownUser" class="dropdown-header"></div>
+                        <a href="dashboard.html">My Dashboard</a>
+                        <a onclick="app.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <!-- Mobile Nav Drawer -->
-    <div class="mobile-nav-overlay" id="mobileOverlay" onclick="closeMobileNav()"></div>
-    <div class="mobile-nav-drawer" id="mobileDrawer">
-        <a href="index.html">Home</a>
-        <a href="dashboard.html" id="mobileNavDashboard">Dashboard</a>
-        <a href="start.html">Start Anime</a>
-        <a href="chat.html" class="active">Community</a>
-    </div>
+    <div class="bottom-nav" id="bottomNav"></div>
 
+    <div id="chatOverlay" class="chat-overlay"></div>
     <main class="chat-main">
         <div class="chat-container">
-            <div class="chat-sidebar">
-                <h3>Genre Rooms</h3>
+            <div class="chat-sidebar" id="chatSidebar">
+                <div class="chat-sidebar-header">
+                    <h3>Genre Rooms</h3>
+                    <button id="closeRoomsBtn" class="chat-rooms-close" type="button">✕</button>
+                </div>
                 <ul id="genreList">
                     <!-- Populated dynamically from MASTER_GENRES -->
                     <li class="loading" style="font-size:0.8rem; padding: 10px 20px;">Loading...</li>
@@ -53,9 +58,10 @@
             </div>
             <div class="chat-window">
                 <div class="chat-header">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div class="chat-header-left">
+                        <button id="roomPickerBtn" class="chat-room-picker" type="button">☰</button>
                         <h3 id="currentRoomName">🔥 Action Room</h3>
-                        <span style="font-size: 0.72rem; color:#666;">24h auto-delete</span>
+                        <span class="chat-room-subtitle">24h auto-delete</span>
                     </div>
                     <div class="notification-controls">
                         <label class="switch-label">Mention Notifications</label>
@@ -77,21 +83,23 @@
     </main>
 
     <div id="notificationArea"></div>
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="js/genres.js"></script>
     <script src="js/app.js"></script>
     <script>
-        function toggleMobileNav() {
-            document.getElementById('mobileToggle').classList.toggle('open');
-            document.getElementById('mobileDrawer').classList.toggle('open');
-            document.getElementById('mobileOverlay').classList.toggle('show');
-        }
-        function closeMobileNav() {
-            document.getElementById('mobileToggle').classList.remove('open');
-            document.getElementById('mobileDrawer').classList.remove('open');
-            document.getElementById('mobileOverlay').classList.remove('show');
-        }
-
         // Genre emoji map
         const GENRE_EMOJI = {
             Action:'⚡', Adventure:'🗺️', Comedy:'😂', Romance:'❤️', Fantasy:'🔮',

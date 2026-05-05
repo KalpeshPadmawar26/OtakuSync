@@ -9,25 +9,39 @@
 </head>
 <body>
     <nav class="navbar">
-        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
-            <div class="hamburger" onclick="app.toggleFloatingMenu()">☰</div>
-            <div class="floating-menu" id="floatingMenu">
-                <a href="index.html#trending">Top Anime</a>
-                <a href="index.html#airing">Airing Anime</a>
-                <a href="index.html#upcoming">Upcoming Anime</a>
-            </div>
-            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">OtakuSync</a></div>
+        <div class="navbar-left">
+            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks">
+                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
+                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            </ul>
         </div>
-        <ul class="nav-links desktop-links">
-            <li><a href="index.html">Home</a></li>
-            <li class="active"><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="chat.html">Community</a></li>
-        </ul>
-        <div id="userMenu">
-            <span id="welcomeText" style="margin-right: 15px; font-weight: bold;"></span>
-            <button class="logout-btn" onclick="app.logout()">Logout</button>
+
+        <div class="navbar-right">
+            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
+                <div id="searchResults" class="search-results hidden"></div>
+            </form>
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
+                    <i>👤</i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div id="authButtons">
+                        <a onclick="app.showAuthModal('login')">Login</a>
+                        <a onclick="app.showAuthModal('register')">Register</a>
+                    </div>
+                    <div id="userMenu" class="hidden">
+                        <div id="dropdownUser" class="dropdown-header"></div>
+                        <a href="dashboard.html">My Dashboard</a>
+                        <a onclick="app.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
+
+    <div class="bottom-nav" id="bottomNav"></div>
 
     <main style="padding-top: 80px;">
         <section class="section">
@@ -60,6 +74,19 @@
     </main>
 
     <div id="notificationArea"></div>
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text"></div>
+        </div>
+    </div>
+
     <script src="js/app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
