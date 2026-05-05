@@ -42,7 +42,7 @@
         <a href="chat.html" class="active">Community</a>
     </div>
 
-    <main class="chat-main" style="padding-top: calc(var(--navbar-height) + 20px);">
+    <main class="chat-main">
         <div class="chat-container">
             <div class="chat-sidebar">
                 <h3>Genre Rooms</h3>
@@ -53,8 +53,17 @@
             </div>
             <div class="chat-window">
                 <div class="chat-header">
-                    <h3 id="currentRoomName">🔥 Action Room</h3>
-                    <span style="font-size: 0.78rem; color:#666;">24h auto-delete</span>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <h3 id="currentRoomName">🔥 Action Room</h3>
+                        <span style="font-size: 0.72rem; color:#666;">24h auto-delete</span>
+                    </div>
+                    <div class="notification-controls">
+                        <label class="switch-label">Mention Notifications</label>
+                        <label class="switch">
+                            <input type="checkbox" id="notifyToggle" onchange="app.updateNotificationPreference(this.checked)" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="chat-messages" id="chatMessages">
                     <div style="text-align:center;color:#555;padding:30px;">Connecting to chat...</div>

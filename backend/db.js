@@ -22,9 +22,19 @@ async function initDb() {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(255) UNIQUE NOT NULL,
                 email VARCHAR(255),
-                password VARCHAR(255) NOT NULL
+                password VARCHAR(255) NOT NULL,
+                preferences JSON DEFAULT NULL,
+                notify_mentions BOOLEAN DEFAULT TRUE
             )
         `);
+
+        // Migration for existing tables
+        try {
+            await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences JSON DEFAULT NULL");
+            await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_mentions BOOLEAN DEFAULT TRUE");
+        } catch (err) {
+            // IF NOT EXISTS might not be supported in older MySQL, ignore if it fails due to column existence
+        }
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS watchlist (

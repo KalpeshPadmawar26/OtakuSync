@@ -42,12 +42,17 @@ app.use('/api/recommendations', recommendationRoutes);
 io.on('connection', (socket) => {
     let currentRoom = null;
 
+    socket.on('identify', (username) => {
+        socket.join(username);
+        console.log(`User ${username} joined their own room.`);
+    });
+
     socket.on('joinRoom', async (genre) => {
         if(currentRoom) socket.leave(currentRoom);
         currentRoom = genre;
         socket.join(currentRoom);
 
-        // Fetch last 50 messages internally
+        // Fetch last 50 messages
         try {
             const [rows] = await db.query(
                 'SELECT username as user, message, created_at as time FROM chat_messages WHERE room = ? ORDER BY created_at ASC LIMIT 50',
@@ -70,7 +75,29 @@ io.on('connection', (socket) => {
         // Broadcast to room
         io.to(currentRoom).emit('newMessage', msgObject);
 
-        // Store internally
+        // Extract Mentions
+        const mentionRegex = /@(\w+)/g;
+        const mentions = [...data.message.matchAll(mentionRegex)].map(m => m[1]);
+        
+        if (mentions.length > 0) {
+            for (const mention of mentions) {
+                if (mention === data.username) continue; // Don't notify self
+
+                try {
+                    const [users] = await db.query('SELECT notify_mentions FROM users WHERE username = ?', [mention]);
+                    if (users[0] && users[0].notify_mentions) {
+                        io.to(mention).emit('mention', {
+                            from: data.username,
+                            message: data.message
+                        });
+                    }
+                } catch (e) {
+                    console.error("Mention delivery failed", e);
+                }
+            }
+        }
+
+        // Store message
         try {
             await db.query(
                 'INSERT INTO chat_messages (room, username, message) VALUES (?, ?, ?)',

@@ -21,8 +21,100 @@ class App {
         this.socket = null;
         this.currentRoom = 'Action';
 
+        // Clear cache on manual refresh if needed
+        if (performance.getEntriesByType("navigation")[0]?.type === 'reload') {
+            sessionStorage.clear();
+            console.log("Manual refresh detected - Cache cleared.");
+        }
+
         this.bindEvents();
         this.updateAuthUI();
+
+        // Constants
+        this.CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+        // Browser Notifications
+        if ("Notification" in window && Notification.permission !== "denied" && this.token) {
+            Notification.requestPermission();
+        }
+    }
+
+    showToast(msg, isMention = false) {
+        const toast = document.createElement('div');
+        toast.className = `toast-notif ${isMention ? 'mention-toast' : ''}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <span>${msg}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 5000);
+    }
+
+    showBrowserNotification(title, message) {
+        const notifyEnabled = JSON.parse(localStorage.getItem('notifyMentions')) ?? true;
+        if (!notifyEnabled) return;
+
+        if (Notification.permission === "granted") {
+            new Notification(title, {
+                body: message,
+                icon: "/logo.png"
+            });
+        }
+    }
+
+    async updateNotificationPreference(enabled) {
+        localStorage.setItem('notifyMentions', JSON.stringify(enabled));
+        if (this.token) {
+            try {
+                await this.fetchAPI('/user/notification-preference', {
+                    method: 'POST',
+                    body: JSON.stringify({ notifyMentions: enabled })
+                });
+            } catch (e) {
+                console.error("Failed to sync preference to server");
+            }
+        }
+    }
+
+    // --- CACHING ---
+
+    setCache(key, data) {
+        try {
+            sessionStorage.setItem(key, JSON.stringify({
+                data,
+                time: Date.now()
+            }));
+        } catch (e) {
+            console.warn("Failed to set session cache", e);
+        }
+    }
+
+    getCache(key) {
+        try {
+            const item = JSON.parse(sessionStorage.getItem(key));
+            if (!item) return null;
+            if (Date.now() - item.time > this.CACHE_EXPIRY) {
+                sessionStorage.removeItem(key);
+                return null;
+            }
+            return item.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async fetchWithCache(endpoint, cacheKey) {
+        const cached = this.getCache(cacheKey);
+        if (cached) return cached;
+
+        const data = await this.fetchAPI(endpoint);
+        this.setCache(cacheKey, data);
+        return data;
     }
 
     // --- UTILS & UI ---
@@ -290,6 +382,9 @@ class App {
             this.watchlist = data.watchlist || [];
             this.watched = data.watched || [];
             this.preferences = data.preferences || null;
+            if (data.notifyMentions !== undefined) {
+                localStorage.setItem('notifyMentions', JSON.stringify(data.notifyMentions));
+            }
             
             if(this.preferences) {
                 localStorage.setItem('preferences', JSON.stringify(this.preferences));
@@ -341,39 +436,61 @@ class App {
     }
 
     async initHome() {
+        console.log("Initializing Home...");
         if (this.token) await this.fetchUserData();
 
         const trendingList = document.getElementById('trendingList');
         const airingList = document.getElementById('airingList');
         const upcomingList = document.getElementById('upcomingList');
 
-        if (!trendingList || !airingList) return;
-
-        try {
-            // Fetch sequentially to prevent Jikan API HTTP 429 Rate Limits
-            const top = await this.fetchAPI('/anime/top?page=1').catch(e => ({ data: [] }));
-            if (top.data.length > 0) {
-                trendingList.innerHTML = top.data.map(a => this.createAnimeCard(a)).join('');
-            } else {
-                trendingList.innerHTML = '<div class="error-text">Rate limited by API. Please wait a moment and reload.</div>';
-            }
-
-            const airing = await this.fetchAPI('/anime/airing?page=1').catch(e => ({ data: [] }));
-            if (airing.data.length > 0) {
-                airingList.innerHTML = airing.data.map(a => this.createAnimeCard(a)).join('');
-            } else {
-                airingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
-            }
-
-            const upcoming = await this.fetchAPI('/anime/upcoming?page=1').catch(e => ({ data: [] }));
-            if (upcoming.data.length > 0) {
-                upcomingList.innerHTML = upcoming.data.map(a => this.createAnimeCard(a, "", true)).join('');
-            } else {
-                upcomingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
-            }
-        } catch (e) {
-            trendingList.innerHTML = '<div class="error-text">Network Error. Check console.</div>';
+        // Load each section independently
+        if (trendingList) {
+            this.fetchWithCache('/anime/top?page=1', 'topAnime_1')
+                .then(res => {
+                    if (res.data && res.data.length > 0) {
+                        trendingList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                    } else {
+                        trendingList.innerHTML = '<div class="error-text">Rate limited by API. Please wait a moment and reload.</div>';
+                    }
+                })
+                .catch(e => {
+                    console.error("Top Anime Error:", e);
+                    trendingList.innerHTML = '<div class="error-text">Network Error. Check console.</div>';
+                });
         }
+
+        if (airingList) {
+            this.fetchWithCache('/anime/airing?page=1', 'airingAnime_1')
+                .then(res => {
+                    if (res.data && res.data.length > 0) {
+                        airingList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                    } else {
+                        airingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
+                    }
+                })
+                .catch(e => {
+                    console.error("Airing Anime Error:", e);
+                    airingList.innerHTML = '<div class="error-text">Network Error. Check console.</div>';
+                });
+        }
+
+        if (upcomingList) {
+            console.log("Fetching upcoming anime...");
+            this.fetchWithCache('/anime/upcoming?page=1', 'upcomingAnime_1')
+                .then(res => {
+                    if (res.data && res.data.length > 0) {
+                        upcomingList.innerHTML = res.data.map(a => this.createAnimeCard(a, "", true)).join('');
+                    } else {
+                        upcomingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
+                    }
+                })
+                .catch(e => {
+                    console.error("Upcoming Anime Error:", e);
+                    upcomingList.innerHTML = '<div class="error-text">Network Error. Check console.</div>';
+                });
+        }
+
+        // "Your Genres" section — shown only for logged-in users with preferences
 
         // "Your Genres" section — shown only for logged-in users with preferences
         if(this.token && this.preferences && this.preferences.length > 0) {
@@ -656,6 +773,7 @@ class App {
 
         this.socket.on('connect', () => {
             document.getElementById('chatMessages').innerHTML = '';
+            this.socket.emit('identify', this.username);
             this.socket.emit('joinRoom', this.currentRoom);
         });
 
@@ -670,6 +788,18 @@ class App {
             chatBox.innerHTML += this.createMessageUI(msg);
             chatBox.scrollTop = chatBox.scrollHeight;
         });
+
+        this.socket.on('mention', (data) => {
+            this.showToast(`${data.from} mentioned you!`, true);
+            this.showBrowserNotification("OtakuSync Mention", `@${data.from}: ${data.message}`);
+        });
+
+        const notifyToggle = document.getElementById('notifyToggle');
+        if (notifyToggle) {
+            notifyToggle.checked = JSON.parse(localStorage.getItem('notifyMentions')) ?? true;
+        }
+
+        this.setupMentionAutocomplete();
     }
 
     joinChatRoom(genre, el = null) {
@@ -679,10 +809,59 @@ class App {
         }
         this.currentRoom = genre;
         document.getElementById('currentRoomName').innerText = `🔥 ${genre} Room`;
-        document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;color:#666;padding:20px;">Fetching history...</div>';
+        const msgs = document.getElementById('chatMessages');
+        if (msgs) msgs.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">Fetching history...</div>';
         if (this.socket) {
             this.socket.emit('joinRoom', genre);
         }
+    }
+
+    setupMentionAutocomplete() {
+        const inp = document.getElementById('chatInput');
+        if (!inp) return;
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'mentionDropdown';
+        dropdown.className = 'mention-dropdown hidden';
+        inp.parentElement.appendChild(dropdown);
+
+        let debounce;
+        inp.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const lastAt = val.lastIndexOf('@');
+            
+            if (lastAt !== -1 && (lastAt === 0 || val[lastAt - 1] === ' ')) {
+                const query = val.slice(lastAt + 1).split(' ')[0];
+                clearTimeout(debounce);
+                debounce = setTimeout(async () => {
+                    try {
+                        const users = await this.fetchAPI(`/user/search?q=${encodeURIComponent(query)}`);
+                        if (users.length > 0) {
+                            dropdown.innerHTML = users.map(u => `<div class="mention-item">${u}</div>`).join('');
+                            dropdown.classList.remove('hidden');
+                            
+                            dropdown.querySelectorAll('.mention-item').forEach(item => {
+                                item.onclick = () => {
+                                    const before = val.slice(0, lastAt);
+                                    const after = val.slice(lastAt + 1 + query.length);
+                                    inp.value = `${before}@${item.innerText} ${after}`;
+                                    dropdown.classList.add('hidden');
+                                    inp.focus();
+                                };
+                            });
+                        } else {
+                            dropdown.classList.add('hidden');
+                        }
+                    } catch (e) { dropdown.classList.add('hidden'); }
+                }, 300);
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.chat-input-area')) dropdown.classList.add('hidden');
+        });
     }
 
     sendChatMessage() {
@@ -696,16 +875,22 @@ class App {
         });
 
         inp.value = '';
+        const dropdown = document.getElementById('mentionDropdown');
+        if (dropdown) dropdown.classList.add('hidden');
     }
 
     createMessageUI(m) {
         const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Highlight Mentions
+        let msgHtml = m.message.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+
         return `
             <div class="chat-msg">
                 <span class="msg-u">${m.user}</span>
                 <span class="msg-t">${time}</span>
                 <br>
-                <div class="msg-c">${m.message}</div>
+                <div class="msg-c">${msgHtml}</div>
             </div>
         `;
     }
