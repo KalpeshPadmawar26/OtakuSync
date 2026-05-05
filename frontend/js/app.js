@@ -581,38 +581,76 @@ class App {
         const isWatched = this.watched.some(a => a.id === anime.id);
         const isWatchlisted = this.watchlist.some(a => a.id === anime.id);
         const safeAnime = JSON.stringify(anime).replace(/'/g, "&#39;");
+        const synopsis = anime.synopsis || 'No synopsis available.';
 
         const btnWatchlist = `<button class="btn-primary ${isWatchlisted ? 'active' : ''}" style="${isWatchlisted ? 'background:#e66a00;' : ''}" onclick='app.handleToggle("watchlist", ${safeAnime}, ${isWatchlisted}, event)'>${isWatchlisted ? 'In Watchlist' : 'Add to Watchlist'}</button>`;
         const btnWatched = `<button class="btn-secondary ${isWatched ? 'active' : ''}" style="${isWatched ? 'border-color:#e66a00; background:rgba(255,122,0,0.2)' : ''}" onclick='app.handleToggle("watched", ${safeAnime}, ${isWatched}, event)'>${isWatched ? 'Marked Watched' : 'Mark as Watched'}</button>`;
 
+        const trailerHtml = (anime.trailer) 
+            ? `<div class="anime-right">
+                    <h3 class="section-title">🎬 Watch Trailer</h3>
+                    <div class="trailer-container">
+                        <iframe src="${anime.trailer}" loading="lazy" allowfullscreen></iframe>
+                    </div>
+               </div>`
+            : '';
+
         const html = `
             <div class="detail-banner" style="background-image: url('${anime.image}');"></div>
-            <div class="detail-container">
-                <div class="detail-poster">
-                    <img src="${anime.image}" alt="${anime.title}">
+            <div class="anime-container">
+                <div class="anime-left">
+                    <div class="detail-container">
+                        <div class="detail-poster">
+                            <img src="${anime.image}" alt="${anime.title}">
+                        </div>
+                        <div class="detail-info">
+                            <h1 class="detail-title">${anime.title}</h1>
+                            <div class="detail-genres">
+                                ${anime.genres.map(g => `<span class="genre-badge">${g}</span>`).join('')}
+                            </div>
+                            <div class="detail-meta">
+                                <span>⭐ ${anime.score || 'N/A'}</span>
+                                <span>📺 ${anime.episodes || '?'} Episodes</span>
+                                <span>🔥 ${anime.status}</span>
+                                <span>📅 ${anime.aired || 'Unknown'}</span>
+                            </div>
+                            <div class="detail-desc" id="synopsisContainer">
+                                ${synopsis.length > 350 ? `
+                                    <div id="shortSynopsis">
+                                        ${synopsis.slice(0, 350)}... 
+                                        <span class="show-more-btn" onclick="app.toggleSynopsis(true)">Show More</span>
+                                    </div>
+                                    <div id="fullSynopsis" class="hidden expanded-box">
+                                        ${synopsis}
+                                        <div style="margin-top:12px; text-align:right;">
+                                            <span class="show-more-btn" onclick="app.toggleSynopsis(false)">Show Less</span>
+                                        </div>
+                                    </div>
+                                ` : synopsis}
+                            </div>
+                            <div class="detail-actions">
+                                ${btnWatchlist}
+                                ${btnWatched}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="detail-info">
-                    <h1 class="detail-title">${anime.title}</h1>
-                    <div class="detail-genres">
-                        ${anime.genres.map(g => `<span class="genre-badge">${g}</span>`).join('')}
-                    </div>
-                    <div class="detail-meta">
-                        <span>⭐ ${anime.score || 'N/A'}</span>
-                        <span>📺 ${anime.episodes || '?'} Episodes</span>
-                        <span>🔥 ${anime.status}</span>
-                        <span>📅 ${anime.aired || 'Unknown'}</span>
-                    </div>
-                    <div class="detail-desc">
-                        ${anime.synopsis || 'No synopsis available.'}
-                    </div>
-                    <div class="detail-actions">
-                        ${btnWatchlist}
-                        ${btnWatched}
-                    </div>
-                </div>
+                ${trailerHtml}
             </div>
         `;
         document.getElementById('animeDetailView').innerHTML = html;
+    }
+
+    toggleSynopsis(expand) {
+        const short = document.getElementById('shortSynopsis');
+        const full = document.getElementById('fullSynopsis');
+        if (expand) {
+            short.classList.add('hidden');
+            full.classList.remove('hidden');
+        } else {
+            short.classList.remove('hidden');
+            full.classList.add('hidden');
+        }
     }
 
     async initDashboard() {

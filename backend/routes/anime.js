@@ -27,7 +27,7 @@ const normalizeAnime = (item) => {
         airing: item.airing,
         aired: item.aired?.string,
         synopsis: item.synopsis,
-        trailer: item.trailer?.youtube_id
+        trailer: item.trailer?.embed_url
     };
 };
 
