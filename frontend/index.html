@@ -3,156 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OtakuSync | Anime Recommendations</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Primary SEO -->
+    <title>OtakuSync - Anime Tracker &amp; AniList Sync</title>
+    <meta name="description" content="Track anime, sync AniList, manage watchlists, discover trending anime and seasonal releases with OtakuSync.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://otakusync.vercel.app/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://otakusync.vercel.app/">
+    <meta property="og:title" content="OtakuSync - Anime Tracker &amp; AniList Sync">
+    <meta property="og:description" content="Track anime, sync AniList, manage watchlists, discover trending anime and seasonal releases with OtakuSync.">
+    <meta property="og:image" content="https://otakusync.vercel.app/og-image.jpg">
+    <meta property="og:site_name" content="OtakuSync">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OtakuSync - Anime Tracker &amp; AniList Sync">
+    <meta name="twitter:description" content="Track anime, sync AniList, manage watchlists, discover trending anime and seasonal releases with OtakuSync.">
+    <meta name="twitter:image" content="https://otakusync.vercel.app/og-image.jpg">
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://api.jikan.moe">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="css/style.css"></noscript>
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "OtakuSync",
+      "url": "https://otakusync.vercel.app/",
+      "description": "Track anime, sync AniList, manage watchlists, discover trending anime and seasonal releases with OtakuSync.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://otakusync.vercel.app/category.html?type=trending&q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="navbar-left">
-            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
-            <ul class="nav-links" id="desktopNavLinks">
-                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
-                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            <div class="logo"><a href="/" aria-label="OtakuSync Home">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks" role="list">
+                <li role="listitem"><a href="start.html">Start Anime</a></li>
+                <li role="listitem"><a href="chat.html">Community</a></li>
             </ul>
         </div>
 
         <div class="navbar-right">
-            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
-                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
-                <div id="searchResults" class="search-results hidden"></div>
+            <form class="search-container" id="mainSearch" role="search" aria-label="Search anime" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <label for="searchInput" class="sr-only">Search anime</label>
+                <input type="search" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off" oninput="app.handleSearch(this.value)" aria-label="Search anime">
+                <div id="searchResults" class="search-results hidden" role="listbox" aria-label="Search results"></div>
             </form>
 
             <div class="profile-container" id="profileContainer">
-                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
-                    <i>👤</i>
-                </div>
-                <div class="profile-dropdown" id="profileDropdown">
+                <button class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                    <i data-lucide="user"></i>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" role="menu">
                     <div id="authButtons">
-                        <a onclick="app.showAuthModal('login')">Login</a>
-                        <a onclick="app.showAuthModal('register')">Register</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('login')" role="menuitem">Login</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('register')" role="menuitem">Register</a>
                     </div>
                     <div id="userMenu" class="hidden">
-                        <div id="dropdownUser" class="dropdown-header"></div>
-                        <a href="dashboard.html">My Dashboard</a>
-                        <a onclick="app.logout()">Logout</a>
+                        <div id="dropdownUser" class="dropdown-header" role="menuitem"></div>
+                        <a href="dashboard.html" role="menuitem">My Dashboard</a>
+                        <a href="#" onclick="event.preventDefault(); app.logout()" role="menuitem">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav" id="bottomNav">
-        <!-- Will be populated by app.js based on auth state -->
-    </div>
+    <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation"></nav>
 
-
-
-    <!-- Auth Modal -->
-    <div id="authModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="app.hideAuthModal()">&times;</span>
-            <h2 id="modalTitle">Login</h2>
-            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
-            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
-            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
-            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
-            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
-            <div id="authError" class="error-text"></div>
-        </div>
-    </div>
-
-    <!-- Home Page Content -->
-    <header class="hero">
-        <h1>Discover Your Next Obsession</h1>
-        <p>Sync your anime tastes and get algorithmic recommendations powered by your watchlist.</p>
-        <div class="hero-actions">
-            <button class="btn-primary" onclick="document.getElementById('trending-section').scrollIntoView({behavior: 'smooth'})">Browse Top Anime</button>
+    <header class="hero" role="banner">
+        <div class="hero-content">
+            <h1>Discover Your Next Anime Obsession</h1>
+            <p>Sync your anime tastes and get algorithmic recommendations powered by your watchlist.</p>
+            <div class="hero-actions">
+                <a href="#trending-section" class="btn-primary" onclick="event.preventDefault(); document.getElementById('trending-section').scrollIntoView({behavior: 'smooth'})">Browse Top Anime</a>
+                <a href="start.html" class="btn-secondary">Get Started Free</a>
+            </div>
         </div>
     </header>
 
-    <main>
-        <section class="section" id="trending-section">
+    <main id="main-content">
+        <section class="section" id="trending-section" aria-labelledby="trending-heading">
             <div class="section-header">
-                <h2 class="section-title">🔥 New Release</h2>
-                <a href="category.html?type=trending" class="see-all-btn">See All</a>
+                <h2 class="section-title" id="trending-heading"><i data-lucide="flame" class="title-icon"></i> New Releases</h2>
+                <a href="category.html?type=trending" class="see-all-btn" aria-label="See all trending anime">See All</a>
             </div>
-            <div class="horizontal-scroll" id="trendingList">
-                <div class="loading">Loading...</div>
+            <div class="horizontal-scroll" id="trendingList" aria-live="polite" aria-label="Trending anime list">
+                <div class="loading" role="status">Loading trending anime...</div>
             </div>
         </section>
 
-        <section class="section" id="airing-section">
+        <section class="section" id="airing-section" aria-labelledby="airing-heading">
             <div class="section-header">
-                <h2 class="section-title">⭐ Top Airing</h2>
-                <a href="category.html?type=airing" class="see-all-btn">See All</a>
+                <h2 class="section-title" id="airing-heading"><i data-lucide="star" class="title-icon"></i> Top Airing</h2>
+                <a href="category.html?type=airing" class="see-all-btn" aria-label="See all currently airing anime">See All</a>
             </div>
-            <div class="horizontal-scroll" id="airingList">
-                <div class="loading">Loading...</div>
+            <div class="horizontal-scroll" id="airingList" aria-live="polite" aria-label="Currently airing anime">
+                <div class="loading" role="status">Loading airing anime...</div>
             </div>
         </section>
 
-        <section class="section" id="upcoming-section">
+        <section class="section" id="upcoming-section" aria-labelledby="upcoming-heading">
             <div class="section-header">
-                <h2 class="section-title">🆕 Upcoming</h2>
-                <a href="category.html?type=upcoming" class="see-all-btn">See All</a>
+                <h2 class="section-title" id="upcoming-heading"><i data-lucide="calendar" class="title-icon"></i> Upcoming</h2>
+                <a href="category.html?type=upcoming" class="see-all-btn" aria-label="See all upcoming anime">See All</a>
             </div>
-            <div class="horizontal-scroll" id="upcomingList">
-                <div class="loading">Loading...</div>
-            </div>
-        </section>
-
-        <!-- Your Genres Section (shown only when logged in + have preferences) -->
-        <section class="section hidden" id="yourGenresSection">
-            <h2 class="section-title" id="yourGenresTitle">🎯 Because You Like...</h2>
-            <div class="horizontal-scroll" id="yourGenresList">
-                <div class="loading">Loading...</div>
+            <div class="horizontal-scroll" id="upcomingList" aria-live="polite" aria-label="Upcoming anime">
+                <div class="loading" role="status">Loading upcoming anime...</div>
             </div>
         </section>
 
-        <!-- Feedback Section -->
-        <section class="section">
+        <section class="section hidden" id="yourGenresSection" aria-labelledby="genres-heading">
+            <h2 class="section-title" id="genres-heading"><i data-lucide="target" class="title-icon"></i> Because You Like...</h2>
+            <div class="horizontal-scroll" id="yourGenresList" aria-live="polite">
+                <div class="loading" role="status">Loading...</div>
+            </div>
+        </section>
+
+        <!-- SEO Content Section -->
+        <section class="section seo-content-section" aria-labelledby="why-heading">
+            <div class="seo-header">
+                <h2 id="why-heading">Why OtakuSync is the Best Anime Tracker</h2>
+                <p class="seo-subtitle">Your all-in-one platform for discovering, tracking, and discussing anime.</p>
+            </div>
+            <div class="seo-grid">
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="layout"></i></div>
+                    <h3>Anime Tracking Made Easy</h3>
+                    <p>Effortlessly track every anime you've watched, are currently watching, or plan to watch. Keep all your progress in one clean dashboard.</p>
+                </article>
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="refresh-cw"></i></div>
+                    <h3>AniList Sync</h3>
+                    <p>Seamlessly sync your existing AniList library with OtakuSync. Import your full watch history in seconds and pick up right where you left off.</p>
+                </article>
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="message-square"></i></div>
+                    <h3>Community Chat</h3>
+                    <p>Join real-time genre-specific chat rooms. Discuss current episodes, share theories, and connect with thousands of other OtakuSync fans.</p>
+                </article>
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="sparkles"></i></div>
+                    <h3>Starter Picks</h3>
+                    <p>New to anime? Our curated <a href="start.html">Start Anime</a> page helps you find the perfect first series based on your favorite genres and vibes.</p>
+                </article>
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="trending-up"></i></div>
+                    <h3>Trending & Seasonal</h3>
+                    <p>Stay on top of what's hot. Browse every seasonal release with airing schedules, episode counts, and live community ratings.</p>
+                </article>
+                <article class="seo-card">
+                    <div class="seo-icon"><i data-lucide="brain-circuit"></i></div>
+                    <h3>Smart Recommendations</h3>
+                    <p>The more you track, the smarter OtakuSync gets. Our engine analyzes your preferences to surface anime you'll actually love, right on your home feed.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="feedback-heading">
             <div class="feedback-section">
-                <h2>Give Feedback</h2>
-                <form onsubmit="event.preventDefault(); app.submitFeedback();">
-                    <textarea id="feedbackMsg" placeholder="Tell us what you think..." required></textarea>
+                <h2 id="feedback-heading">Give Feedback</h2>
+                <form onsubmit="event.preventDefault(); app.submitFeedback();" aria-label="Feedback form">
+                    <label for="feedbackMsg" class="sr-only">Your feedback</label>
+                    <textarea id="feedbackMsg" placeholder="Tell us what you think..." required aria-label="Your feedback"></textarea>
                     <button type="submit" class="btn-primary">Submit Feedback</button>
                 </form>
             </div>
         </section>
     </main>
 
-    <!-- Onboarding Modal (MASTER_GENRES driven) -->
-    <div id="onboardingModal" class="modal hidden">
+    <!-- Modals -->
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close" onclick="app.hideAuthModal()" aria-label="Close login modal">&times;</button>
+            <h2 id="modalTitle">Login</h2>
+            <label for="authUsername" class="sr-only">Username</label>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input" autocomplete="username">
+            <label for="authEmail" class="sr-only">Email</label>
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden" autocomplete="email">
+            <label for="authPassword" class="sr-only">Password</label>
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input" autocomplete="current-password">
+            <label for="authConfirmPassword" class="sr-only">Confirm Password</label>
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden" autocomplete="new-password">
+            <button id="authSubmit" class="login-btn auth-submit">Submit</button>
+            <div id="authError" class="error-text" role="alert"></div>
+        </div>
+    </div>
+
+    <div id="onboardingModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
         <div class="modal-content" style="width: 540px; text-align: left;">
-            <h2 style="margin-bottom:10px; color:var(--primary-color);">Setup Your Profile 🎯</h2>
+            <h2 id="onboardingTitle" style="margin-bottom:10px; color:var(--primary-color);">Setup Your Profile 🎯</h2>
             <p style="color:var(--text-muted); margin-bottom: 20px;">Select a few genres you usually enjoy — we'll personalize your experience.</p>
             <form onsubmit="event.preventDefault(); app.submitOnboarding();">
-                <div class="genres-grid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;" id="onboardingGenreGrid">
-                    <!-- Populated by genres.js -->
-                </div>
+                <div class="genres-grid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;" id="onboardingGenreGrid"></div>
                 <button type="submit" class="auth-submit btn-primary">Save Preferences</button>
             </form>
         </div>
     </div>
 
-    <!-- Picks Modal -->
-    <div id="picksModal" class="modal hidden">
+    <div id="picksModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="picksTitle">
         <div class="modal-content" style="width: 80%; text-align: left; background: var(--bg-color);">
-            <span class="close" onclick="document.getElementById('picksModal').classList.add('hidden')">&times;</span>
-            <h2 style="margin-bottom:20px; color:var(--primary-color);">Top Picks For You</h2>
+            <button class="close" onclick="document.getElementById('picksModal').classList.add('hidden')" aria-label="Close picks modal">&times;</button>
+            <h2 id="picksTitle" style="margin-bottom:20px; color:var(--primary-color);">Top Picks For You</h2>
             <div class="horizontal-scroll" id="picksList"></div>
         </div>
     </div>
 
-    <div id="notificationArea"></div>
-    <script src="js/genres.js"></script>
-    <script src="js/app.js"></script>
+    <div id="notificationArea" role="status" aria-live="polite"></div>
 
+    <script src="js/genres.js" defer></script>
+    <script src="js/app.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             app.initHome();
+            lucide.createIcons();
         });
     </script>
 </body>

@@ -1,133 +1,141 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Chat | OtakuSync</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>Anime Community Chat | OtakuSync</title>
+    <meta name="description" content="Join the OtakuSync community chat. Discuss your favorite anime, share recommendations, and connect with other fans in genre-specific rooms.">
+    <meta name="robots" content="noindex, nofollow"> <!-- Private chat rooms -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="css/style.css"></noscript>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="navbar-left">
-            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
-            <ul class="nav-links" id="desktopNavLinks">
-                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
-                <li class="active"><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            <div class="logo"><a href="/" aria-label="OtakuSync Home">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks" role="list">
+                <li role="listitem"><a href="start.html">Start Anime</a></li>
+                <li class="active" role="listitem"><a href="chat.html" aria-current="page">Community</a></li>
             </ul>
         </div>
-
         <div class="navbar-right">
-            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
-                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
-                <div id="searchResults" class="search-results hidden"></div>
+            <form class="search-container" id="mainSearch" role="search" aria-label="Search anime" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <label for="searchInput" class="sr-only">Search anime</label>
+                <input type="search" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off" oninput="app.handleSearch(this.value)" aria-label="Search anime">
+                <div id="searchResults" class="search-results hidden" role="listbox"></div>
             </form>
             <div class="profile-container" id="profileContainer">
-                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
-                    <i>👤</i>
-                </div>
-                <div class="profile-dropdown" id="profileDropdown">
+                <button class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                    <i data-lucide="user"></i>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" role="menu">
                     <div id="authButtons">
-                        <a onclick="app.showAuthModal('login')">Login</a>
-                        <a onclick="app.showAuthModal('register')">Register</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('login')" role="menuitem">Login</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('register')" role="menuitem">Register</a>
                     </div>
                     <div id="userMenu" class="hidden">
-                        <div id="dropdownUser" class="dropdown-header"></div>
-                        <a href="dashboard.html">My Dashboard</a>
-                        <a onclick="app.logout()">Logout</a>
+                        <div id="dropdownUser" class="dropdown-header" role="menuitem"></div>
+                        <a href="dashboard.html" role="menuitem">My Dashboard</a>
+                        <a href="#" onclick="event.preventDefault(); app.logout()" role="menuitem">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="bottom-nav" id="bottomNav"></div>
+    <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation"></nav>
 
-    <div id="chatOverlay" class="chat-overlay"></div>
-    <main class="chat-main">
+    <div id="chatOverlay" class="chat-overlay" aria-hidden="true"></div>
+    <main class="chat-main" aria-label="Community chat rooms">
         <div class="chat-container">
-            <div class="chat-sidebar" id="chatSidebar">
+            <aside class="chat-sidebar" id="chatSidebar" aria-label="Chat rooms list">
                 <div class="chat-sidebar-header">
-                    <h3>Genre Rooms</h3>
-                    <button id="closeRoomsBtn" class="chat-rooms-close" type="button">✕</button>
+                    <h2>Genre Rooms</h2>
+                    <button id="closeRoomsBtn" class="chat-rooms-close" type="button" aria-label="Close rooms menu">✕</button>
                 </div>
-                <ul id="genreList">
-                    <!-- Populated dynamically from MASTER_GENRES -->
-                    <li class="loading" style="font-size:0.8rem; padding: 10px 20px;">Loading...</li>
+                <ul id="genreList" role="menu">
+                    <li class="loading" style="font-size:0.8rem; padding: 10px 20px;" role="status">Loading...</li>
                 </ul>
-            </div>
-            <div class="chat-window">
-                <div class="chat-header">
+            </aside>
+            <section class="chat-window" aria-labelledby="currentRoomName">
+                <header class="chat-header">
                     <div class="chat-header-left">
-                        <button id="roomPickerBtn" class="chat-room-picker" type="button">☰</button>
-                        <h3 id="currentRoomName">🔥 Action Room</h3>
+                        <button id="roomPickerBtn" class="chat-room-picker" type="button" aria-label="Open rooms menu" aria-controls="chatSidebar" aria-expanded="false"><i data-lucide="menu"></i></button>
+                        <h1 id="currentRoomName" style="font-size: 1.17em; margin: 0; display: flex; align-items: center; gap: 8px;"><i data-lucide="message-square" class="title-icon"></i> Action Room</h1>
                         <span class="chat-room-subtitle">24h auto-delete</span>
                     </div>
                     <div class="notification-controls">
-                        <label class="switch-label">Mention Notifications</label>
+                        <label class="switch-label" for="notifyToggle">Mentions</label>
                         <label class="switch">
-                            <input type="checkbox" id="notifyToggle" onchange="app.updateNotificationPreference(this.checked)" checked>
+                            <input type="checkbox" id="notifyToggle" onchange="app.updateNotificationPreference(this.checked)" checked aria-label="Toggle mention notifications">
                             <span class="slider round"></span>
                         </label>
                     </div>
-                </div>
-                <div class="chat-messages" id="chatMessages">
+                </header>
+                <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
                     <div style="text-align:center;color:#555;padding:30px;">Connecting to chat...</div>
                 </div>
-                <form class="chat-input-area" onsubmit="event.preventDefault(); app.sendChatMessage();">
-                    <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required>
+                <form class="chat-input-area" onsubmit="event.preventDefault(); app.sendChatMessage();" aria-label="Send a message">
+                    <label for="chatInput" class="sr-only">Type a message</label>
+                    <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required aria-label="Type a message">
                     <button type="submit" class="btn-primary">Send</button>
                 </form>
-            </div>
+            </section>
         </div>
     </main>
 
-    <div id="notificationArea"></div>
-    <div id="authModal" class="modal hidden">
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
-            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <button class="close" onclick="app.hideAuthModal()" aria-label="Close">&times;</button>
             <h2 id="modalTitle">Login</h2>
-            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
-            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
-            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
-            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <label for="authUsername" class="sr-only">Username</label>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input" autocomplete="username">
+            <label for="authEmail" class="sr-only">Email</label>
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden" autocomplete="email">
+            <label for="authPassword" class="sr-only">Password</label>
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input" autocomplete="current-password">
+            <label for="authConfirmPassword" class="sr-only">Confirm Password</label>
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden" autocomplete="new-password">
             <button id="authSubmit" class="login-btn auth-submit">Submit</button>
-            <div id="authError" class="error-text"></div>
+            <div id="authError" class="error-text" role="alert"></div>
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
-    <script src="js/genres.js"></script>
-    <script src="js/app.js"></script>
+    <div id="notificationArea" role="status" aria-live="polite"></div>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" defer></script>
+    <script src="js/genres.js" defer></script>
+    <script src="js/app.js" defer></script>
     <script>
-        // Genre emoji map
-        const GENRE_EMOJI = {
-            Action:'⚡', Adventure:'🗺️', Comedy:'😂', Romance:'❤️', Fantasy:'🔮',
-            Horror:'💀', Mystery:'🕵️', Drama:'🎭', 'Slice of Life':'🌟', 'Sci-Fi':'🚀',
-            Thriller:'🔪', Psychological:'🧠', Supernatural:'👻', Mecha:'🤖',
-            Sports:'⚽', Music:'🎵', Historical:'⚔️', Isekai:'🌀', Samurai:'🗡️',
-            Military:'🪖', Magic:'✨', School:'📚', Parody:'🎭', Space:'🌌',
-            Vampire:'🧛', Shounen:'💪', Shoujo:'🌸', Seinen:'📖', Josei:'💐',
-            'Martial Arts':'🥋', 'Super Power':'💥', Police:'🚔', Game:'🎮',
-            Kids:'🧸', Demons:'😈', Harem:'🌸', 'Time Travel':'⏰',
-            'Psychological Thriller':'🌀', Dementia:'🌀', Cars:'🏎️'
+        const GENRE_ICON = {
+            Action:'zap', Adventure:'map', Comedy:'laugh', Romance:'heart', Fantasy:'wand-2',
+            Horror:'ghost', Mystery:'search', Drama:'theater', 'Slice of Life':'sparkles', 'Sci-Fi':'rocket',
+            Thriller:'skull', Psychological:'brain', Supernatural:'cloud-lightning', Mecha:'bot',
+            Sports:'trophy', Music:'music', Historical:'shield', Isekai:'portal', Samurai:'sword',
+            Military:'shield-alert', Magic:'wand', School:'graduation-cap', Parody:'mask', Space:'milky-way',
+            Vampire:'bat', Shounen:'dumbbell', Shoujo:'flower-2', Seinen:'book-open', Josei:'heart-handshake',
+            'Martial Arts':'fist', 'Super Power':'zap', Police:'badge-check', Game:'gamepad-2',
+            Kids:'baby', Demons:'flame', Harem:'users', 'Time Travel':'clock',
+            'Psychological Thriller':'brain-circuit', Dementia:'brain-circuit', Cars:'car'
         };
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!localStorage.getItem('token')) {
-                window.location.href = 'index.html';
+                window.location.href = '/';
                 return;
             }
-
-            // Populate genre sidebar from MASTER_GENRES
             const list = document.getElementById('genreList');
             list.innerHTML = MASTER_GENRES.map((g, i) => `
-                <li onclick="app.joinChatRoom('${g}', this)" ${i===0 ? 'class="active"' : ''}>
-                    ${GENRE_EMOJI[g] || '💬'} ${g}
+                <li onclick="app.joinChatRoom('${g}', this)" ${i===0 ? 'class="active"' : ''} role="menuitem" tabindex="0" style="display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="${GENRE_ICON[g] || 'message-circle'}" style="width:16px; height:16px;"></i> ${g}
                 </li>
             `).join('');
-
             app.initChat();
+            lucide.createIcons();
         });
     </script>
 </body>

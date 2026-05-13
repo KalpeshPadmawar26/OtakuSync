@@ -3,78 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Start Anime | OtakuSync</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>Start Anime - Discover Your First Anime | OtakuSync</title>
+    <meta name="description" content="New to anime? Browse OtakuSync's curated starter picks by genre. Find the perfect anime to match your vibe and start your journey.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://otakusync.vercel.app/start.html">
+    <meta property="og:title" content="Start Anime | OtakuSync">
+    <meta property="og:description" content="Discover your first anime with OtakuSync curated starter picks.">
+    <meta property="og:url" content="https://otakusync.vercel.app/start.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="css/style.css"></noscript>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="navbar-left">
-            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
-            <ul class="nav-links" id="desktopNavLinks">
-                <li class="active"><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
-                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            <div class="logo"><a href="/" aria-label="OtakuSync Home">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks" role="list">
+                <li class="active" role="listitem"><a href="start.html">Start Anime</a></li>
+                <li role="listitem"><a href="chat.html">Community</a></li>
             </ul>
         </div>
-
         <div class="navbar-right">
-            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
-                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
-                <div id="searchResults" class="search-results hidden"></div>
+            <form class="search-container" id="mainSearch" role="search" aria-label="Search anime" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <label for="searchInput" class="sr-only">Search anime</label>
+                <input type="search" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off" oninput="app.handleSearch(this.value)" aria-label="Search anime">
+                <div id="searchResults" class="search-results hidden" role="listbox"></div>
             </form>
             <div class="profile-container" id="profileContainer">
-                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
-                    <i>👤</i>
-                </div>
-                <div class="profile-dropdown" id="profileDropdown">
+                <button class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                    <i data-lucide="user"></i>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" role="menu">
                     <div id="authButtons">
-                        <a onclick="app.showAuthModal('login')">Login</a>
-                        <a onclick="app.showAuthModal('register')">Register</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('login')" role="menuitem">Login</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('register')" role="menuitem">Register</a>
                     </div>
                     <div id="userMenu" class="hidden">
-                        <div id="dropdownUser" class="dropdown-header"></div>
-                        <a href="dashboard.html">My Dashboard</a>
-                        <a onclick="app.logout()">Logout</a>
+                        <div id="dropdownUser" class="dropdown-header" role="menuitem"></div>
+                        <a href="dashboard.html" role="menuitem">My Dashboard</a>
+                        <a href="#" onclick="event.preventDefault(); app.logout()" role="menuitem">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="bottom-nav" id="bottomNav"></div>
+    <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation"></nav>
 
-    <main style="padding-top: calc(var(--navbar-height) + 20px); padding-bottom: 60px;">
+    <main id="main-content" style="padding-top: calc(var(--navbar-height) + 20px); padding-bottom: 60px;" aria-labelledby="start-heading">
         <div style="text-align:center; padding: 30px 20px 10px;">
-            <h1 style="font-size: 2.4rem; color: var(--primary-color); font-weight: 800;">Discover Your First Anime</h1>
+            <h1 id="start-heading" style="font-size: 2.4rem; color: var(--primary-color); font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <i data-lucide="sparkles" style="width: 40px; height: 40px;"></i>
+                Discover Your First Anime
+            </h1>
             <p style="color: var(--text-muted); font-size: 1rem; margin-top: 10px; max-width: 560px; margin-inline: auto;">
                 Browse curated starter picks by genre. Find what matches your vibe.
             </p>
         </div>
-        <div id="startersContainer">
-            <div class="loading" style="text-align:center; padding: 40px;">Loading curated picks...</div>
+        <div id="startersContainer" aria-live="polite">
+            <div class="loading" style="text-align:center; padding: 40px;" role="status">Loading curated picks...</div>
         </div>
     </main>
 
-    <div id="notificationArea"></div>
-    <div id="authModal" class="modal hidden">
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
-            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <button class="close" onclick="app.hideAuthModal()" aria-label="Close">&times;</button>
             <h2 id="modalTitle">Login</h2>
-            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
-            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
-            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
-            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <label for="authUsername" class="sr-only">Username</label>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input" autocomplete="username">
+            <label for="authEmail" class="sr-only">Email</label>
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden" autocomplete="email">
+            <label for="authPassword" class="sr-only">Password</label>
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input" autocomplete="current-password">
+            <label for="authConfirmPassword" class="sr-only">Confirm Password</label>
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden" autocomplete="new-password">
             <button id="authSubmit" class="login-btn auth-submit">Submit</button>
-            <div id="authError" class="error-text"></div>
+            <div id="authError" class="error-text" role="alert"></div>
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="js/genres.js"></script>
-    <script src="js/app.js"></script>
+    <div id="notificationArea" role="status" aria-live="polite"></div>
+    <script src="js/genres.js" defer></script>
+    <script src="js/app.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            app.initStarters();
+        document.addEventListener('DOMContentLoaded', () => { 
+            app.initStarters(); 
+            lucide.createIcons();
         });
     </script>
 </body>

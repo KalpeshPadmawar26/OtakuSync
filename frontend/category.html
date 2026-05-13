@@ -3,101 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore Categories | OtakuSync</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>Explore Anime Categories | OtakuSync</title>
+    <meta name="description" content="Browse trending, airing and upcoming anime on OtakuSync. Explore full category listings with ratings, genres and watchlist controls.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://otakusync.vercel.app/category.html">
+    <meta property="og:title" content="Explore Anime | OtakuSync">
+    <meta property="og:description" content="Browse trending, airing and upcoming anime categories on OtakuSync.">
+    <meta property="og:url" content="https://otakusync.vercel.app/category.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="css/style.css"></noscript>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .category-page-header {
-            padding: 40px 24px 20px;
-            max-width: 1300px;
-            margin: 80px auto 0;
-        }
-        .category-title {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-        .category-meta {
-            color: var(--text-muted);
-            margin-bottom: 30px;
-        }
-        .load-more-container {
-            display: flex;
-            justify-content: center;
-            margin: 50px 0;
-        }
+        .category-page-header { padding: 40px 24px 20px; max-width: 1300px; margin: 80px auto 0; }
+        .category-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+        .category-meta { color: var(--text-muted); margin-bottom: 30px; }
+        .load-more-container { display: flex; justify-content: center; margin: 50px 0; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="navbar-left">
-            <div class="logo"><a href="index.html" onclick="app.goHome(event)">OtakuSync</a></div>
-            <ul class="nav-links" id="desktopNavLinks">
-                <li><a href="start.html" onclick="app.goStart(event)">Start Anime</a></li>
-                <li><a href="chat.html" onclick="app.goCommunity(event)">Community</a></li>
+            <div class="logo"><a href="/" aria-label="OtakuSync Home">OtakuSync</a></div>
+            <ul class="nav-links" id="desktopNavLinks" role="list">
+                <li role="listitem"><a href="start.html">Start Anime</a></li>
+                <li role="listitem"><a href="chat.html">Community</a></li>
             </ul>
         </div>
         <div class="navbar-right">
-            <form class="search-container" id="mainSearch" onsubmit="event.preventDefault(); app.handleFormSearch();">
-                <input type="text" class="search-bar" placeholder="Search anime..." oninput="app.handleSearch(this.value)">
-                <div id="searchResults" class="search-results hidden"></div>
+            <form class="search-container" id="mainSearch" role="search" aria-label="Search anime" onsubmit="event.preventDefault(); app.handleFormSearch();">
+                <label for="searchInput" class="sr-only">Search anime</label>
+                <input type="search" id="searchInput" class="search-bar" placeholder="Search anime..." autocomplete="off" oninput="app.handleSearch(this.value)" aria-label="Search anime">
+                <div id="searchResults" class="search-results hidden" role="listbox"></div>
             </form>
             <div class="profile-container" id="profileContainer">
-                <div class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)">
-                    <i>👤</i>
-                </div>
-                <div class="profile-dropdown" id="profileDropdown">
+                <button class="profile-circle" id="profileIcon" onclick="app.toggleProfileMenu(event)" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                    <i data-lucide="user"></i>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" role="menu">
                     <div id="authButtons">
-                        <a onclick="app.showAuthModal('login')">Login</a>
-                        <a onclick="app.showAuthModal('register')">Register</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('login')" role="menuitem">Login</a>
+                        <a href="#" onclick="event.preventDefault(); app.showAuthModal('register')" role="menuitem">Register</a>
                     </div>
                     <div id="userMenu" class="hidden">
-                        <div id="dropdownUser" class="dropdown-header"></div>
-                        <a href="dashboard.html">My Dashboard</a>
-                        <a onclick="app.logout()">Logout</a>
+                        <div id="dropdownUser" class="dropdown-header" role="menuitem"></div>
+                        <a href="dashboard.html" role="menuitem">My Dashboard</a>
+                        <a href="#" onclick="event.preventDefault(); app.logout()" role="menuitem">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="category-page-header">
-        <h1 id="categoryTitle" class="category-title">Explore</h1>
-        <p id="categoryCount" class="category-meta">Discover the best anime in this category.</p>
-        
-        <div class="anime-grid" id="categoryGrid">
-            <!-- Data populated by app.js -->
-        </div>
+    <nav class="bottom-nav" id="bottomNav" aria-label="Mobile navigation"></nav>
 
+    <main class="category-page-header" aria-labelledby="categoryTitle">
+        <h1 id="categoryTitle" class="category-title" style="display: flex; align-items: center; gap: 12px;">
+            <i data-lucide="compass" class="title-icon" style="width: 32px; height: 32px;"></i>
+            Explore
+        </h1>
+        <p id="categoryCount" class="category-meta">Discover the best anime in this category.</p>
+        <div class="anime-grid" id="categoryGrid" aria-live="polite"></div>
         <div class="load-more-container">
             <button id="loadMoreBtn" class="btn-primary" onclick="app.loadMoreCategory()">Load More</button>
         </div>
-    </div>
+    </main>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav" id="bottomNav"></div>
-
-    <!-- Auth Modal -->
-    <div id="authModal" class="modal hidden">
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
-            <span class="close" onclick="app.hideAuthModal()">&times;</span>
+            <button class="close" onclick="app.hideAuthModal()" aria-label="Close">&times;</button>
             <h2 id="modalTitle">Login</h2>
-            <input type="text" id="authUsername" placeholder="Username" class="auth-input">
-            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden">
-            <input type="password" id="authPassword" placeholder="Password" class="auth-input">
-            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden">
+            <label for="authUsername" class="sr-only">Username</label>
+            <input type="text" id="authUsername" placeholder="Username" class="auth-input" autocomplete="username">
+            <label for="authEmail" class="sr-only">Email</label>
+            <input type="email" id="authEmail" placeholder="Email" class="auth-input hidden" autocomplete="email">
+            <label for="authPassword" class="sr-only">Password</label>
+            <input type="password" id="authPassword" placeholder="Password" class="auth-input" autocomplete="current-password">
+            <label for="authConfirmPassword" class="sr-only">Confirm Password</label>
+            <input type="password" id="authConfirmPassword" placeholder="Confirm Password" class="auth-input hidden" autocomplete="new-password">
             <button id="authSubmit" class="login-btn auth-submit">Submit</button>
-            <div id="authError" class="error-text"></div>
+            <div id="authError" class="error-text" role="alert"></div>
         </div>
     </div>
 
-    <div id="notificationArea"></div>
-
-    <script src="js/genres.js"></script>
-    <script src="js/app.js"></script>
+    <div id="notificationArea" role="status" aria-live="polite"></div>
+    <script src="js/genres.js" defer></script>
+    <script src="js/app.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            app.initCategoryPage();
+        document.addEventListener('DOMContentLoaded', () => { 
+            app.initCategoryPage(); 
+            lucide.createIcons();
         });
     </script>
 </body>

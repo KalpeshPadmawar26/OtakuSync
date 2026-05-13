@@ -33,6 +33,7 @@ class App {
             console.log("Manual refresh detected - Cache cleared.");
         }
 
+        this._injectSkipLink();
         this.bindEvents();
         this.updateAuthUI();
 
@@ -42,6 +43,22 @@ class App {
         // Browser Notifications
         if ("Notification" in window && Notification.permission !== "denied" && this.token) {
             Notification.requestPermission();
+        }
+    }
+
+    _injectSkipLink() {
+        if (document.getElementById('skip-to-content')) return;
+        const skip = document.createElement('a');
+        skip.id = 'skip-to-content';
+        skip.href = '#main-content';
+        skip.className = 'skip-link';
+        skip.textContent = 'Skip to main content';
+        document.body.insertBefore(skip, document.body.firstChild);
+    }
+
+    refreshIcons() {
+        if (window.lucide) {
+            lucide.createIcons();
         }
     }
 
@@ -453,7 +470,7 @@ class App {
             } else {
                 resultsBox.innerHTML = results.data.slice(0, 10).map(anime => `
                     <a href="anime.html?id=${anime.id}" class="search-result-item" style="color:inherit; text-decoration:none;">
-                        <img src="${anime.image}" alt="${anime.title}">
+                        <img src="${anime.image}" alt="${anime.title} thumbnail" loading="lazy" width="38" height="52" decoding="async">
                         <div>
                             <h4>${anime.title}</h4>
                             <span style="font-size: 0.8rem; color: #aaa;">${anime.genres.slice(0, 2).join(', ')}</span>
@@ -462,6 +479,7 @@ class App {
                 `).join('');
             }
             resultsBox.classList.remove('hidden');
+            this.refreshIcons();
         } catch (e) {
             console.error("Search failed");
         }
@@ -560,6 +578,7 @@ class App {
                 .then(res => {
                     if (res.data && res.data.length > 0) {
                         trendingList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                        this.refreshIcons();
                     } else {
                         trendingList.innerHTML = '<div class="error-text">Rate limited by API. Please wait a moment and reload.</div>';
                     }
@@ -575,6 +594,7 @@ class App {
                 .then(res => {
                     if (res.data && res.data.length > 0) {
                         airingList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                        this.refreshIcons();
                     } else {
                         airingList.innerHTML = '<div class="error-text">Temporarily unavailable. Try loading more soon.</div>';
                     }
@@ -591,6 +611,7 @@ class App {
                 .then(res => {
                     if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
                         upcomingList.innerHTML = res.data.map(a => this.createAnimeCard(a, "", true)).join('');
+                        this.refreshIcons();
                     } else {
                         console.warn("Upcoming Anime empty or missing data:", res);
                         upcomingList.innerHTML = '<div class="error-text">No upcoming anime found at the moment.</div>';
@@ -612,11 +633,12 @@ class App {
             const yourGenresTitle = document.getElementById('yourGenresTitle');
             if(yourGenresSection && yourGenresList) {
                 yourGenresSection.classList.remove('hidden');
-                if(yourGenresTitle) yourGenresTitle.innerText = `🎯 Because You Like ${topTwo.join(' & ')}`;
+                if(yourGenresTitle) yourGenresTitle.innerHTML = `<i data-lucide="target" class="title-icon"></i> Because You Like ${topTwo.join(' & ')}`;
                 try {
                     const res = await this.fetchAPI(`/anime/search?q=${encodeURIComponent(topTwo[0])}`);
                     if(res && res.data && res.data.length > 0) {
                         yourGenresList.innerHTML = res.data.map(a => this.createAnimeCard(a)).join('');
+                        this.refreshIcons();
                     } else {
                         yourGenresList.innerHTML = '<div class="loading">Generating picks...</div>';
                     }
@@ -646,6 +668,7 @@ class App {
             const res = await this.fetchAPI(`${target.endpoint}?page=${page}`);
             const newCards = res.data.map(a => this.createAnimeCard(a, "", isUp)).join('');
             container.innerHTML += newCards;
+            this.refreshIcons();
 
             if (!res.hasNextPage) {
                 event.target.style.display = 'none';
@@ -673,6 +696,7 @@ class App {
             const relatedContainer = document.getElementById('relatedAnimeList');
             if (res.related && res.related.length > 0) {
                 relatedContainer.innerHTML = res.related.map(a => this.createAnimeCard(a)).join('');
+                this.refreshIcons();
             } else {
                 relatedContainer.innerHTML = '<div style="color: grey;">No related anime found.</div>';
             }
@@ -692,7 +716,7 @@ class App {
 
         const trailerHtml = (anime.trailer) 
             ? `<div class="anime-right">
-                    <h3 class="section-title">🎬 Watch Trailer</h3>
+                    <h3 class="section-title"><i data-lucide="play" class="title-icon"></i> Watch Trailer</h3>
                     <div class="trailer-container">
                         <iframe src="${anime.trailer}" loading="lazy" allowfullscreen></iframe>
                     </div>
@@ -705,7 +729,7 @@ class App {
                 <div class="anime-left">
                     <div class="detail-container">
                         <div class="detail-poster">
-                            <img src="${anime.image}" alt="${anime.title}">
+                            <img src="${anime.image}" alt="${anime.title} cover poster" width="240" height="340" fetchpriority="high" decoding="sync">
                         </div>
                         <div class="detail-info">
                             <h1 class="detail-title">${anime.title}</h1>
@@ -713,10 +737,10 @@ class App {
                                 ${anime.genres.map(g => `<span class="genre-badge">${g}</span>`).join('')}
                             </div>
                             <div class="detail-meta">
-                                <span>⭐ ${anime.score || 'N/A'}</span>
-                                <span>📺 ${anime.episodes || '?'} Episodes</span>
-                                <span>🔥 ${anime.status}</span>
-                                <span>📅 ${anime.aired || 'Unknown'}</span>
+                                <span><i data-lucide="star" style="width:14px; height:14px; vertical-align:middle; fill:currentColor; margin-right:4px;"></i>${anime.score || 'N/A'}</span>
+                                <span><i data-lucide="tv" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>${anime.episodes || '?'} Episodes</span>
+                                <span><i data-lucide="flame" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>${anime.status}</span>
+                                <span><i data-lucide="calendar" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i>${anime.aired || 'Unknown'}</span>
                             </div>
                             <div class="detail-desc" id="synopsisContainer">
                                 ${synopsis.length > 350 ? `
@@ -743,6 +767,32 @@ class App {
             </div>
         `;
         document.getElementById('animeDetailView').innerHTML = html;
+        this.refreshIcons();
+
+        // Inject JSON-LD structured data for Google SEO
+        const ld = {
+            "@context": "https://schema.org",
+            "@type": "Movie",
+            "name": anime.title,
+            "image": anime.image,
+            "description": synopsis,
+            "genre": anime.genres,
+            "aggregateRating": anime.score ? {
+                "@type": "AggregateRating",
+                "ratingValue": anime.score,
+                "bestRating": "10"
+            } : undefined
+        };
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(ld);
+        document.head.appendChild(script);
+
+        // Update page title dynamically
+        document.title = `${anime.title} | OtakuSync`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if(metaDesc) metaDesc.setAttribute('content', `${synopsis.slice(0, 155)}...`);
+
     }
 
     toggleSynopsis(expand) {
@@ -767,10 +817,16 @@ class App {
         if (!watchedList) return;
 
         if (this.watched.length === 0) watchedList.innerHTML = '<div class="loading">No watched anime yet.</div>';
-        else watchedList.innerHTML = this.watched.map(a => this.createAnimeCard(a)).join('');
+        else {
+            watchedList.innerHTML = this.watched.map(a => this.createAnimeCard(a)).join('');
+            this.refreshIcons();
+        }
 
         if (this.watchlist.length === 0) watchlistList.innerHTML = '<div class="loading">Watchlist is empty.</div>';
-        else watchlistList.innerHTML = this.watchlist.map(a => this.createAnimeCard(a)).join('');
+        else {
+            watchlistList.innerHTML = this.watchlist.map(a => this.createAnimeCard(a)).join('');
+            this.refreshIcons();
+        }
 
         this.renderInsights();
 
@@ -780,6 +836,7 @@ class App {
                 recList.innerHTML = '<div class="loading">Add more anime to get recommendations!</div>';
             } else {
                 recList.innerHTML = recs.map(a => this.createAnimeCard(a, a.reason)).join('');
+                this.refreshIcons();
             }
         } catch (e) {
             recList.innerHTML = '<div class="error-text">Failed to generate recommendations.</div>';
@@ -835,17 +892,17 @@ class App {
         }
 
         const reasonHtml = reason ? `<span class="reason-text">${reason}</span>` : '';
-        const topBadge = anime.score ? `<div class="card-rating-badge">⭐ ${Number(anime.score).toFixed(1)}</div>` : '';
+        const topBadge = anime.score ? `<div class="card-rating-badge"><i data-lucide="star" style="width:10px; height:10px; fill:currentColor; vertical-align:middle; margin-right:2px;"></i>${Number(anime.score).toFixed(1)}</div>` : '';
         const genres = Array.isArray(anime.genres) ? anime.genres : [];
         const genreHtml = genres.slice(0, 2).map(g =>
             `<span class="genre-tag" onclick="event.stopPropagation(); window.location.href='genre.html?name=${encodeURIComponent(g)}'">${g}</span>`
         ).join('');
 
         return `
-            <div class="anime-card" id="anime-${anime.id}" onclick="window.location.href='anime.html?id=${anime.id}'">
+            <div class="anime-card" id="anime-${anime.id}" onclick="window.location.href='anime.html?id=${anime.id}'" role="article" aria-label="${anime.title}">
                 ${topBadge}
                 <div class="anime-img-wrapper">
-                    <img src="${anime.image}" alt="${anime.title}" />
+                    <img src="${anime.image}" alt="${anime.title} poster" loading="lazy" width="160" height="240" decoding="async" onload="this.classList.add('img-loaded')" />
                 </div>
                 <div class="card-info">
                     <h3 title="${anime.title}">${anime.title}</h3>
@@ -939,12 +996,14 @@ class App {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML = messages.map(m => this.createMessageUI(m)).join('');
             chatBox.scrollTop = chatBox.scrollHeight;
+            this.refreshIcons();
         });
 
         this.socket.on('newMessage', (msg) => {
             const chatBox = document.getElementById('chatMessages');
             chatBox.innerHTML += this.createMessageUI(msg);
             chatBox.scrollTop = chatBox.scrollHeight;
+            this.refreshIcons();
         });
 
         this.socket.on('mention', (data) => {
@@ -988,7 +1047,8 @@ class App {
             el.classList.add('active');
         }
         this.currentRoom = genre;
-        document.getElementById('currentRoomName').innerText = `🔥 ${genre} Room`;
+        document.getElementById('currentRoomName').innerHTML = `<i data-lucide="message-square" class="title-icon"></i> ${genre} Room`;
+        this.refreshIcons();
         const msgs = document.getElementById('chatMessages');
         if (msgs) msgs.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">Fetching history...</div>';
         if (this.socket) {
@@ -1097,10 +1157,10 @@ class App {
 
         // Use GENRE_GROUPS if available, else fallback
         const groups = (typeof GENRE_GROUPS !== 'undefined') ? GENRE_GROUPS : [
-            { label: '💥 Action & Adventure', genres: ['Action', 'Adventure'] },
-            { label: '❤️ Romance & Drama',    genres: ['Romance', 'Drama'] },
-            { label: '😂 Comedy',             genres: ['Comedy', 'Parody'] },
-            { label: '🔪 Thriller & Horror',  genres: ['Thriller', 'Horror'] }
+            { label: '<i data-lucide="zap" class="title-icon"></i> Action & Adventure', genres: ['Action', 'Adventure'] },
+            { label: '<i data-lucide="heart" class="title-icon"></i> Romance & Drama',    genres: ['Romance', 'Drama'] },
+            { label: '<i data-lucide="laugh" class="title-icon"></i> Comedy',             genres: ['Comedy', 'Parody'] },
+            { label: '<i data-lucide="skull" class="title-icon"></i> Thriller & Horror',  genres: ['Thriller', 'Horror'] }
         ];
 
         // Show skeleton
@@ -1126,6 +1186,7 @@ class App {
                     const scrollDiv = sectionEl.querySelector('.horizontal-scroll');
                     if(scrollDiv && res.data && res.data.length > 0) {
                         scrollDiv.innerHTML = res.data.slice(0, 10).map(a => this.createAnimeCard(a)).join('');
+                        this.refreshIcons();
                     } else if(scrollDiv) {
                         scrollDiv.innerHTML = '<div class="loading">No results found.</div>';
                     }
@@ -1146,13 +1207,13 @@ class App {
         this.categoryPage = 1;
 
         const titles = {
-            trending: '🔥 Trending Now',
-            airing: '⭐ Seasonal Hits',
-            upcoming: '🆕 Highly Anticipated'
+            trending: '<i data-lucide="flame" class="title-icon"></i> Trending Now',
+            airing: '<i data-lucide="star" class="title-icon"></i> Seasonal Hits',
+            upcoming: '<i data-lucide="calendar" class="title-icon"></i> Highly Anticipated'
         };
 
         const titleEl = document.getElementById('categoryTitle');
-        if (titleEl) titleEl.innerText = titles[type] || 'Explore';
+        if (titleEl) titleEl.innerHTML = titles[type] || 'Explore';
         document.title = `${titles[type] || 'Explore'} | OtakuSync`;
 
         await this.loadCategoryData();
@@ -1172,6 +1233,7 @@ class App {
 
             if (res.data && res.data.length > 0) {
                 grid.innerHTML += res.data.map(a => this.createAnimeCard(a)).join('');
+                this.refreshIcons();
                 if (btn) btn.style.display = 'block';
             } else {
                 if (btn) btn.style.display = 'none';
@@ -1212,6 +1274,8 @@ class App {
             recList.innerHTML = data.recommended.length > 0
                 ? data.recommended.map(a => this.createAnimeCard(a)).join('')
                 : '<div class="loading">No recommendations found.</div>';
+            
+            this.refreshIcons();
         } catch(e) {
             if(topList) topList.innerHTML = '<div class="error-text">Failed to load. Try again.</div>';
         }
